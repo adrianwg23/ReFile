@@ -1,4 +1,4 @@
-package com.example.ReFile;
+package com.example.refile;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
