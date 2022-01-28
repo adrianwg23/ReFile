@@ -5,6 +5,11 @@ import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeTokenRequest;
 import com.google.api.client.googleapis.auth.oauth2.GoogleTokenResponse;
+import com.google.auth.Credentials;
+import com.google.cloud.storage.Bucket;
+import com.google.cloud.storage.BucketInfo;
+import com.google.cloud.storage.Storage;
+import com.google.cloud.storage.StorageOptions;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -21,10 +26,13 @@ public class AuthController {
 
     private final GoogleAuthorizationCodeFlow authorizationFlow;
     private final GmailService gmailService;
+    private final Credentials credentials;
 
-    public AuthController(GoogleAuthorizationCodeFlow authorizationFlow, GmailService gmailService) {
+    public AuthController(GoogleAuthorizationCodeFlow authorizationFlow, GmailService gmailService,
+                          Credentials credentials) {
         this.authorizationFlow = authorizationFlow;
         this.gmailService = gmailService;
+        this.credentials = credentials;
     }
 
 
@@ -50,6 +58,21 @@ public class AuthController {
 
     @GetMapping("/oauth2callback")
     public void oauth2callback() {
+
+    }
+
+    @GetMapping("/bucket")
+    public void bucket() {
+        Storage storage = StorageOptions.newBuilder().setCredentials(credentials)
+                                        .setProjectId("refile-338520").build().getService();
+
+        // The name for the new bucket
+        String bucketName = "attachmentss";  // "my-new-bucket";
+
+        // Creates the new bucket
+        Bucket bucket = storage.create(BucketInfo.of(bucketName));
+
+        System.out.printf("Bucket %s created.%n", bucket.getName());
 
     }
 
