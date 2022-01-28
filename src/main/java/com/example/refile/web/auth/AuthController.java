@@ -13,7 +13,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.security.Principal;
 
 import static com.example.refile.config.auth.AuthorizationConfiguration.CALLBACK_URL;
 
@@ -42,6 +41,7 @@ public class AuthController {
     @GetMapping("/login")
     public String login() throws IOException {
         Credential credential = getCredential();
+
         Credential loadedCredential = authorizationFlow.loadCredential("test");
         System.out.println(credential.getAccessToken());
         System.out.println(loadedCredential.getAccessToken());
@@ -49,9 +49,8 @@ public class AuthController {
     }
 
     @GetMapping("/oauth2callback")
-    public Principal oauth2callback(Principal principal) {
-        System.out.println(principal);
-        return principal;
+    public void oauth2callback() {
+
     }
 
     public Credential getCredential() throws IOException {
