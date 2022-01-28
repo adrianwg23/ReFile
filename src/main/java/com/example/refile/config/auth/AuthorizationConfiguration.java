@@ -7,7 +7,6 @@ import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.gmail.GmailScopes;
-import com.google.api.services.oauth2.Oauth2;
 import com.google.api.services.oauth2.Oauth2Scopes;
 import com.google.auth.Credentials;
 import com.google.auth.oauth2.GoogleCredentials;
@@ -16,7 +15,6 @@ import org.springframework.context.annotation.Configuration;
 
 import java.io.*;
 import java.util.Arrays;
-import java.util.Collections;
 
 @Configuration
 public class AuthorizationConfiguration {
