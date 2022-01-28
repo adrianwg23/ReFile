@@ -20,7 +20,7 @@ public class AuthorizationConfiguration {
 
     private static final String TOKENS_DIRECTORY = "tokens";
     private static final String CREDENTIALS_FILE_PATH = "/credentials.json";
-    private static final String ADMIN_KEYS_FILE_PATH = "src/main/resources/refile-338520-f478ea79bf20.json";
+    private static final String ADMIN_KEYS_FILE_PATH = "src/main/resources/refile-admin.json";
     private static final JsonFactory JSON_FACTORY = GsonFactory.getDefaultInstance();
 
     public static final String CALLBACK_URL = "http://localhost:8080/oauth2callback";
