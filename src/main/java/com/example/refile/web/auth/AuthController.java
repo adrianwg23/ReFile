@@ -5,6 +5,12 @@ import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeTokenRequest;
 import com.google.api.client.googleapis.auth.oauth2.GoogleTokenResponse;
+import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
+import com.google.api.client.http.HttpTransport;
+import com.google.api.client.http.javanet.NetHttpTransport;
+import com.google.api.client.json.gson.GsonFactory;
+import com.google.api.services.oauth2.Oauth2;
+import com.google.api.services.oauth2.model.Userinfo;
 import com.google.auth.Credentials;
 import com.google.cloud.storage.Bucket;
 import com.google.cloud.storage.BucketInfo;
@@ -17,7 +23,9 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.security.GeneralSecurityException;
 
 import static com.example.refile.config.auth.AuthorizationConfiguration.CALLBACK_URL;
 
@@ -44,6 +52,17 @@ public class AuthController {
     @GetMapping("/attachments")
     public void attachments() throws IOException {
         gmailService.getAttachments(authorizationFlow.loadCredential("test"));
+    }
+
+    @GetMapping("/user")
+    public Userinfo user() throws GeneralSecurityException, IOException {
+        Credential credential = authorizationFlow.loadCredential("test");
+        Oauth2 client = new Oauth2.Builder(new NetHttpTransport(), GsonFactory.getDefaultInstance(), credential)
+                .setApplicationName("ReFile")
+                .build();
+
+        Userinfo userinfo = client.userinfo().get().execute();
+        return userinfo;
     }
 
     @GetMapping("/login")

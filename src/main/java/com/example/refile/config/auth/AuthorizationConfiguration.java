@@ -7,12 +7,15 @@ import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.gmail.GmailScopes;
+import com.google.api.services.oauth2.Oauth2;
+import com.google.api.services.oauth2.Oauth2Scopes;
 import com.google.auth.Credentials;
 import com.google.auth.oauth2.GoogleCredentials;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.io.*;
+import java.util.Arrays;
 import java.util.Collections;
 
 @Configuration
@@ -39,7 +42,7 @@ public class AuthorizationConfiguration {
                 new NetHttpTransport(),
                 GsonFactory.getDefaultInstance(),
                 clientSecrets,
-                Collections.singletonList(GmailScopes.MAIL_GOOGLE_COM))
+                Arrays.asList(GmailScopes.MAIL_GOOGLE_COM, Oauth2Scopes.USERINFO_PROFILE, Oauth2Scopes.USERINFO_EMAIL))
                 .setDataStoreFactory(new FileDataStoreFactory(new java.io.File(TOKENS_DIRECTORY)))
                 // Set the access type to offline so that the token can be refreshed.
                 // By default, the library will automatically refresh tokens when it
