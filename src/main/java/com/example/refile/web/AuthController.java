@@ -14,15 +14,24 @@ import com.google.cloud.storage.Bucket;
 import com.google.cloud.storage.BucketInfo;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
+import org.apache.coyote.Response;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Base64;
 
 import static com.example.refile.config.auth.AuthorizationConfiguration.CALLBACK_URL;
 
@@ -47,8 +56,8 @@ public class AuthController {
     }
 
     @GetMapping("/attachments")
-    public void attachments() throws IOException {
-        gmailService.getAttachments(authorizationFlow.loadCredential("test"));
+    public void attachments(@RequestParam String userId) throws IOException {
+        gmailService.getAttachments(authorizationFlow.loadCredential(userId));
     }
 
     @GetMapping("/user")
@@ -77,21 +86,6 @@ public class AuthController {
 
     }
 
-    @GetMapping("/bucket")
-    public void bucket() {
-        Storage storage = StorageOptions.newBuilder().setCredentials(credentials)
-                                        .setProjectId("refile-338520").build().getService();
-
-        // The name for the new bucket
-        String bucketName = "attachmentss";  // "my-new-bucket";
-
-        // Creates the new bucket
-        Bucket bucket = storage.create(BucketInfo.of(bucketName));
-
-        System.out.printf("Bucket %s created.%n", bucket.getName());
-
-    }
-
     public Credential getCredential() throws IOException {
         String authorizeUrl =
                 authorizationFlow.newAuthorizationUrl().setRedirectUri(CALLBACK_URL).build();
@@ -110,8 +104,22 @@ public class AuthController {
                 authorizationFlow.newTokenRequest(authorizationCode);
         tokenRequest.setRedirectUri(CALLBACK_URL);
         GoogleTokenResponse tokenResponse = tokenRequest.execute();
+//        String hashedUserId = hashString(tokenResponse.parseIdToken().getPayload().getEmail());
 
         // Store the credential for the user.
         return authorizationFlow.createAndStoreCredential(tokenResponse, "test");
+    }
+
+    private String hashString(String str) {
+        byte[] digest = null;
+        try {
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            byte[] bytesOfMessage = str.getBytes(StandardCharsets.UTF_8);
+            digest = md.digest(bytesOfMessage);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        assert digest != null;
+        return Base64.getEncoder().encodeToString(digest);
     }
 }
