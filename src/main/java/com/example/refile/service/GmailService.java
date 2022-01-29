@@ -1,5 +1,9 @@
 package com.example.refile.service;
 
+import com.example.refile.util.HttpUtil;
+import com.example.refile.model.Attachment;
+import com.example.refile.model.User;
+import com.example.refile.repository.UserRepository;
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
@@ -25,60 +29,79 @@ public class GmailService {
     private static final JsonFactory JSON_FACTORY = GsonFactory.getDefaultInstance();
 
     private NetHttpTransport httpTransport = null;
+    private final AuthService authService;
     private final GCSService gcsService;
+    private final UserRepository userRepository;
 
-    public GmailService(GCSService gcsService) {
+    public GmailService(AuthService authService, GCSService gcsService, UserRepository userRepository) {
         try {
             this.httpTransport = GoogleNetHttpTransport.newTrustedTransport();
         } catch (GeneralSecurityException | IOException e) {
             e.printStackTrace();
         }
 
+        this.authService = authService;
         this.gcsService = gcsService;
+        this.userRepository = userRepository;
     }
 
-    public void getAttachments(Credential credential) throws IOException {
+    public List<Attachment> getAttachments(Long userId) {
+        User user = userRepository.findById(userId).get();
+        return user.getAttachments();
+    }
 
-        // need to create a new Gmail instance for every invocation of this method call
-        Gmail service = new Gmail.Builder(httpTransport, JSON_FACTORY, credential)
-                .setApplicationName(APPLICATION_NAME)
-                .build();
+    public void writeAttachments(Long userId) {
+        try {
+            Gmail service = getGmailClient(String.valueOf(userId));
 
-        Gmail.Users.Messages.List request = service.users().messages().list("me").setQ("has:attachment");
+            Gmail.Users.Messages.List request = service.users().messages().list("me").setQ("has:attachment");
 
-        ListMessagesResponse response = request.execute();
-        List<Message> messageIdList = new ArrayList<>(response.getMessages());
+            ListMessagesResponse response = request.execute();
+            List<Message> messageIdList = new ArrayList<>(response.getMessages());
 
-        while (response.getNextPageToken() != null) {
-            String nextPageToken = response.getNextPageToken();
-            request = service.users().messages().list("me")
-                             .setPageToken(nextPageToken)
-                             .setQ("has:attachment");
+            while (response.getNextPageToken() != null) {
+                String nextPageToken = response.getNextPageToken();
+                request = service.users().messages().list("me")
+                                 .setPageToken(nextPageToken)
+                                 .setQ("has:attachment");
 
-            response = request.execute();
-            messageIdList.addAll(response.getMessages());
-        }
+                response = request.execute();
+                messageIdList.addAll(response.getMessages());
+            }
 
-        List<Message> messageList = new ArrayList<>();
-        for (Message messageId : messageIdList) {
-            Message message = service.users().messages().get("me", messageId.getId()).execute();
-            messageList.add(message);
-        }
+            List<Message> messageList = new ArrayList<>();
+            for (Message messageId : messageIdList) {
+                Message message = service.users().messages().get("me", messageId.getId()).execute();
+                messageList.add(message);
+            }
 
-        for (Message message : messageList) {
-            for (MessagePart part : message.getPayload().getParts()) {
-                if (part.getBody().getAttachmentId() != null) {
-                    String fileName = part.getFilename();
-                    String attachmentId = part.getBody().getAttachmentId();
-                    MessagePartBody attachmentPart = service.users()
-                                                            .messages()
-                                                            .attachments()
-                                                            .get("me", message.getId(), attachmentId).execute();
+            for (Message message : messageList) {
+                for (MessagePart part : message.getPayload().getParts()) {
+                    if (part.getBody().getAttachmentId() != null) {
+                        String fileName = part.getFilename();
+                        String attachmentId = part.getBody().getAttachmentId();
+                        MessagePartBody attachmentPart = service.users()
+                                                                .messages()
+                                                                .attachments()
+                                                                .get("me", message.getId(), attachmentId).execute();
 
-                    byte[] attachmentData = Base64.decodeBase64(attachmentPart.getData());
-                    this.gcsService.write(GCSService.ATTACHMENTS_BUCKET, fileName, attachmentData);
+                        byte[] attachmentData = Base64.decodeBase64(attachmentPart.getData());
+                        this.gcsService.write(GCSService.ATTACHMENTS_BUCKET, fileName, attachmentData);
+                        // TODO: Create and persist attachment objects, figure out a way to get blob gcs link
+                    }
                 }
             }
+        } catch(Exception ignored) {
+            ignored.printStackTrace();
         }
+    }
+
+    private Gmail getGmailClient(String userId) {
+        Credential credential = authService.getCredentials(userId);
+        // need to create a new Gmail instance for every invocation of this method call
+
+        return new Gmail.Builder(HttpUtil.getHttpTransport(), JSON_FACTORY, credential)
+                .setApplicationName(APPLICATION_NAME)
+                .build();
     }
 }

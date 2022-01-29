@@ -1,25 +1,30 @@
 package com.example.refile.model;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @Entity
+@NoArgsConstructor
 @Table(name="users")
 public class User {
 
     @Id
     @GeneratedValue
-    private Long id;
-
+    private Long userId;
     private String email;
+    @OneToMany(
+            mappedBy = "user",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    private List<Attachment> attachments = new ArrayList<>();
 
     public User(String email) {
         this.email = email;
     }
-
 }
