@@ -1,4 +1,4 @@
-package com.example.refile.config.auth;
+package com.example.refile.config;
 
 import com.google.auth.Credentials;
 import com.google.cloud.storage.Storage;

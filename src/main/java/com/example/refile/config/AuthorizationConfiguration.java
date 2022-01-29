@@ -1,4 +1,4 @@
-package com.example.refile.config.auth;
+package com.example.refile.config;
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
 import com.google.api.client.googleapis.auth.oauth2.GoogleClientSecrets;
