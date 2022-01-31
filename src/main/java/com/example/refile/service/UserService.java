@@ -21,7 +21,10 @@ public class UserService {
         Optional<User> optionalUser = userRepository.findByEmail(email);
 
         if (optionalUser.isEmpty()) {
-            User user = new User(email, name);
+            User user = User.builder()
+                    .name(name)
+                    .email(email)
+                    .build();
             userRepository.save(user);
             return user;
         }
