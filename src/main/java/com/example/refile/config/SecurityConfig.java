@@ -28,7 +28,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             .and()
             .oauth2Login()
             .loginPage("/login")
-            .defaultSuccessUrl("/login-success")
+            .defaultSuccessUrl("/login-success", true)
             .authorizationEndpoint()
             .authorizationRequestResolver(new CustomAuthorizationRequestResolver(this.clientRegistrationRepository));
 
