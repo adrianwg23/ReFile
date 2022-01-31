@@ -28,12 +28,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             .and()
             .oauth2Login()
             .loginPage("/login")
-            .defaultSuccessUrl("/login-success", true)
+            .defaultSuccessUrl("/authenticated-user", true)
             .authorizationEndpoint()
             .authorizationRequestResolver(new CustomAuthorizationRequestResolver(this.clientRegistrationRepository))
             .and().and().rememberMe();
 
         http.csrf().disable();
+        // for h2 access
         http.headers().frameOptions().disable();
     }
 

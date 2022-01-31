@@ -22,21 +22,21 @@ public class AuthController {
 
     @GetMapping("/login")
     public ModelAndView login() {
-        return new ModelAndView("redirect:http://localhost:8080/oauth2/authorization/google");
+        return new ModelAndView("redirect:/oauth2/authorization/google");
     }
 
-    // return user id, user email, user name, and persist user and credentials in db
-    @GetMapping("/login-success")
-    public ResponseEntity<?> loginSuccess(@RegisteredOAuth2AuthorizedClient OAuth2AuthorizedClient client,
+    @GetMapping("/authenticated-user")
+    public ResponseEntity<User> authenticatedUser(@RegisteredOAuth2AuthorizedClient OAuth2AuthorizedClient client,
                                           @AuthenticationPrincipal OAuth2User principal) {
-
         String email = principal.getAttribute("email");
         String name = principal.getAttribute("name");
         User user = userService.putUser(email, name);
 
-        String accessToken = client.getAccessToken().getTokenValue();
-        String refreshToken = client.getRefreshToken().getTokenValue();
-        credentialService.saveCredential(user.getUserId(), accessToken, refreshToken);
+        if (credentialService.getCredential(user.getUserId()) == null) {
+            String accessToken = client.getAccessToken().getTokenValue();
+            String refreshToken = client.getRefreshToken().getTokenValue();
+            credentialService.saveCredential(user.getUserId(), accessToken, refreshToken);
+        }
 
         return ResponseEntity.ok(user);
     }
