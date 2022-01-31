@@ -2,7 +2,6 @@ package com.example.refile.service;
 
 import com.example.refile.model.Attachment;
 import com.example.refile.model.User;
-import com.example.refile.repository.UserRepository;
 import com.example.refile.util.HttpUtil;
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.json.gson.GsonFactory;
@@ -15,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.codec.binary.Base64;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,6 +23,9 @@ import static com.example.refile.util.Constants.APPLICATION_NAME;
 @Service
 @RequiredArgsConstructor
 public class GmailService {
+
+    // default user id for authenticated users querying gmail
+    private static final String USER_ID = "me";
 
     private final GCSService gcsService;
     private final CredentialService credentialService;
@@ -34,7 +37,7 @@ public class GmailService {
      * @param user User
      * @return List of Attachments belonging to the user
      */
-    public List<Attachment> getAttachments(User user) {
+    public List<Attachment> getAttachments(User user) throws IOException {
         List<Attachment> attachments = user.getAttachments();
 
         if (attachments.isEmpty()) {
@@ -43,50 +46,53 @@ public class GmailService {
         return user.getAttachments();
     }
 
-    public void syncAttachments(User user) {
-        try {
-            Gmail service = getGmailClient(user.getUserId());
+    public void syncAttachments(User user) throws IOException {
+        Gmail gmail = getGmailClient(user.getUserId());
+        List<Message> messageList = getMessagesWithAttachments(gmail);
 
-            Gmail.Users.Messages.List request = service.users().messages().list("me").setQ("has:attachment");
+        for (Message message : messageList) {
+            System.out.println("\n--------------\n");
+            System.out.println(message);
+            for (MessagePart part : message.getPayload().getParts()) {
+                if (part.getBody().getAttachmentId() != null) {
+                    String fileName = part.getFilename();
+                    String attachmentId = part.getBody().getAttachmentId();
+                    MessagePartBody attachmentPart = gmail.users()
+                                                            .messages()
+                                                            .attachments()
+                                                            .get(USER_ID, message.getId(), attachmentId).execute();
 
-            ListMessagesResponse response = request.execute();
-            List<Message> messageIdList = new ArrayList<>(response.getMessages());
-
-            while (response.getNextPageToken() != null) {
-                String nextPageToken = response.getNextPageToken();
-                request = service.users().messages().list("me")
-                                 .setPageToken(nextPageToken)
-                                 .setQ("has:attachment");
-
-                response = request.execute();
-                messageIdList.addAll(response.getMessages());
-            }
-
-            List<Message> messageList = new ArrayList<>();
-            for (Message messageId : messageIdList) {
-                Message message = service.users().messages().get("me", messageId.getId()).execute();
-                messageList.add(message);
-            }
-
-            for (Message message : messageList) {
-                for (MessagePart part : message.getPayload().getParts()) {
-                    if (part.getBody().getAttachmentId() != null) {
-                        String fileName = part.getFilename();
-                        String attachmentId = part.getBody().getAttachmentId();
-                        MessagePartBody attachmentPart = service.users()
-                                                                .messages()
-                                                                .attachments()
-                                                                .get("me", message.getId(), attachmentId).execute();
-
-                        byte[] attachmentData = Base64.decodeBase64(attachmentPart.getData());
-                        this.gcsService.write(GCSService.ATTACHMENTS_BUCKET, fileName, attachmentData);
-                        // TODO: Create and persist attachment objects, figure out a way to get blob gcs link
-                    }
+                    byte[] attachmentData = Base64.decodeBase64(attachmentPart.getData());
+                    this.gcsService.write(GCSService.ATTACHMENTS_BUCKET, fileName, attachmentData);
+                    // TODO: Create and persist attachment objects, figure out a way to get blob gcs link
                 }
             }
-        } catch(Exception ignored) {
-            ignored.printStackTrace();
         }
+    }
+
+    private List<Message> getMessagesWithAttachments(Gmail gmail) throws IOException {
+        Gmail.Users.Messages.List request = gmail.users().messages().list(USER_ID).setQ("has:attachment");
+
+        ListMessagesResponse response = request.execute();
+        List<Message> messageIdList = new ArrayList<>(response.getMessages());
+
+        while (response.getNextPageToken() != null) {
+            String nextPageToken = response.getNextPageToken();
+            request = gmail.users().messages().list(USER_ID)
+                             .setPageToken(nextPageToken)
+                             .setQ("has:attachment");
+
+            response = request.execute();
+            messageIdList.addAll(response.getMessages());
+        }
+
+        List<Message> messageList = new ArrayList<>();
+        for (Message messageId : messageIdList) {
+            Message message = gmail.users().messages().get(USER_ID, messageId.getId()).execute();
+            messageList.add(message);
+        }
+
+        return messageList;
     }
 
     /**

@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -18,13 +19,13 @@ public class RefileController {
     private final GmailService gmailService;
 
     @GetMapping("/attachments/{userId}")
-    public ResponseEntity<List<Attachment>> attachments(@PathVariable Long userId) {
+    public ResponseEntity<List<Attachment>> attachments(@PathVariable Long userId) throws IOException {
         User user = userService.getUser(userId);
         return ResponseEntity.ok(gmailService.getAttachments(user));
     }
 
-    @PostMapping("sync-attachments")
-    public void syncAttachments(@RequestParam Long userId) {
+    @PostMapping("sync-attachments/{userId}")
+    public void syncAttachments(@PathVariable Long userId) throws IOException {
         User user = userService.getUser(userId);
         gmailService.syncAttachments(user);
     }
