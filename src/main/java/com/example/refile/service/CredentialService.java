@@ -1,6 +1,7 @@
 package com.example.refile.service;
 
 import com.example.refile.repository.credentials.CredentialStore;
+import com.example.refile.repository.credentials.InMemoryCredentialStore;
 import com.example.refile.util.HttpUtil;
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.googleapis.auth.oauth2.GoogleClientSecrets;
@@ -9,6 +10,8 @@ import com.google.api.client.json.gson.GsonFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.stereotype.Service;
+
+import java.util.Collections;
 
 @Service
 @RequiredArgsConstructor
@@ -23,9 +26,11 @@ public class CredentialService {
                 .setJsonFactory(GsonFactory.getDefaultInstance())
                 .setTransport(HttpUtil.getHttpTransport())
                 .setClientSecrets(googleClientSecrets)
+                .setRefreshListeners(Collections.singleton((InMemoryCredentialStore) credentialStore))
                 .build()
                 .setAccessToken(accessToken)
-                .setRefreshToken(refreshToken);
+                .setRefreshToken(refreshToken)
+                .setExpiresInSeconds(3600L);
 
         credentialStore.writeCredential(userId, credential);
     }
