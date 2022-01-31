@@ -1,6 +1,5 @@
 package com.example.refile.model;
 
-
 import lombok.Data;
 import lombok.NoArgsConstructor;
 

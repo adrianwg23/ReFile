@@ -1,13 +1,10 @@
 package com.example.refile.service;
 
-import com.example.refile.util.HttpUtil;
 import com.example.refile.model.Attachment;
 import com.example.refile.model.User;
 import com.example.refile.repository.UserRepository;
+import com.example.refile.util.HttpUtil;
 import com.google.api.client.auth.oauth2.Credential;
-import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
-import com.google.api.client.http.javanet.NetHttpTransport;
-import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.services.gmail.Gmail;
 import com.google.api.services.gmail.model.ListMessagesResponse;
@@ -18,8 +15,6 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.codec.binary.Base64;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
-import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.List;
 

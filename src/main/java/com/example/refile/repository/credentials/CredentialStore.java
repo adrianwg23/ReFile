@@ -4,7 +4,7 @@ import com.google.api.client.auth.oauth2.Credential;
 
 public interface CredentialStore {
 
-    public void writeCredential(Long userId, Credential credential);
+    void writeCredential(Long userId, Credential credential);
 
-    public Credential getCredential(Long userId);
+    Credential getCredential(Long userId);
 }
