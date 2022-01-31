@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public class StorageConfiguration {
+public class StorageConfig {
 
     private static final String GCS_PROJCET_ID = "refile-338520";
 

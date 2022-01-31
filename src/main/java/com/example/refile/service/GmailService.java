@@ -14,6 +14,7 @@ import com.google.api.services.gmail.model.ListMessagesResponse;
 import com.google.api.services.gmail.model.Message;
 import com.google.api.services.gmail.model.MessagePart;
 import com.google.api.services.gmail.model.MessagePartBody;
+import lombok.RequiredArgsConstructor;
 import org.apache.commons.codec.binary.Base64;
 import org.springframework.stereotype.Service;
 
@@ -22,28 +23,15 @@ import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.example.refile.util.Constants.APPLICATION_NAME;
+
 @Service
+@RequiredArgsConstructor
 public class GmailService {
 
-    private static final String APPLICATION_NAME = "ReFile";
-    private static final JsonFactory JSON_FACTORY = GsonFactory.getDefaultInstance();
-
-    private NetHttpTransport httpTransport = null;
-    private final AuthService authService;
     private final GCSService gcsService;
+    private final CredentialService credentialService;
     private final UserRepository userRepository;
-
-    public GmailService(AuthService authService, GCSService gcsService, UserRepository userRepository) {
-        try {
-            this.httpTransport = GoogleNetHttpTransport.newTrustedTransport();
-        } catch (GeneralSecurityException | IOException e) {
-            e.printStackTrace();
-        }
-
-        this.authService = authService;
-        this.gcsService = gcsService;
-        this.userRepository = userRepository;
-    }
 
     public List<Attachment> getAttachments(Long userId) {
         User user = userRepository.findById(userId).get();
@@ -52,7 +40,7 @@ public class GmailService {
 
     public void writeAttachments(Long userId) {
         try {
-            Gmail service = getGmailClient(String.valueOf(userId));
+            Gmail service = getGmailClient(userId);
 
             Gmail.Users.Messages.List request = service.users().messages().list("me").setQ("has:attachment");
 
@@ -96,11 +84,14 @@ public class GmailService {
         }
     }
 
-    private Gmail getGmailClient(String userId) {
-        Credential credential = authService.getCredentials(userId);
-        // need to create a new Gmail instance for every invocation of this method call
-
-        return new Gmail.Builder(HttpUtil.getHttpTransport(), JSON_FACTORY, credential)
+    /**
+     * Returns a new Gmail Client instance
+     * @param userId User ID of the user
+     * @return Gmail
+     */
+    private Gmail getGmailClient(Long userId) {
+        Credential credential = credentialService.getCredential(userId);
+        return new Gmail.Builder(HttpUtil.getHttpTransport(), GsonFactory.getDefaultInstance(), credential)
                 .setApplicationName(APPLICATION_NAME)
                 .build();
     }

@@ -61,44 +61,4 @@ public class RefileController {
     public void syncAttachments(@RequestParam Long userId) {
         gmailService.writeAttachments(userId);
     }
-
-    // can remove once integrated with Frontend
-//    @GetMapping("/oauth2callback")
-//    public void oauth2callback() {
-//
-//    }
-//    @GetMapping("/login")
-//    public ResponseEntity<Object> login(@RequestParam String authCode) {
-//        // TODO: return some sort of sessionID to be stored in a cookie (need to save this session in a db somewhere)
-//        try {
-//            Long userId = authService.authorize(authCode);
-//            return ResponseEntity.ok(userId);
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//            return ResponseEntity.internalServerError().body("Internal Server Error");
-//        }
-//    }
-//    public Credential getCredential() throws IOException {
-//        String authorizeUrl =
-//                authorizationFlow.newAuthorizationUrl().setRedirectUri(CALLBACK_URL).build();
-//        System.out.printf("Paste this url in your browser:%n%s%n", authorizeUrl);
-//
-//        // Wait for the authorization code.
-//        System.out.println("Type the code you received here: ");
-//        @SuppressWarnings("DefaultCharset") // Reading from stdin, so default charset is appropriate.
-//                String authorizationCode = new BufferedReader(new InputStreamReader(System.in)).readLine();
-//
-//        authorizationCode = URLDecoder.decode(authorizationCode, StandardCharsets.UTF_8);
-//        System.out.println(authorizationCode);
-//
-//        // Authorize the OAuth2 token.
-//        GoogleAuthorizationCodeTokenRequest tokenRequest =
-//                authorizationFlow.newTokenRequest(authorizationCode);
-//        tokenRequest.setRedirectUri(CALLBACK_URL);
-//        GoogleTokenResponse tokenResponse = tokenRequest.execute();
-////        String hashedUserId = hashString(tokenResponse.parseIdToken().getPayload().getEmail());
-//
-//        // Store the credential for the user.
-//        return authorizationFlow.createAndStoreCredential(tokenResponse, "test");
-//    }
 }
