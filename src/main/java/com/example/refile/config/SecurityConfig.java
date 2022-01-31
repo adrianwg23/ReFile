@@ -30,7 +30,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             .loginPage("/login")
             .defaultSuccessUrl("/login-success", true)
             .authorizationEndpoint()
-            .authorizationRequestResolver(new CustomAuthorizationRequestResolver(this.clientRegistrationRepository));
+            .authorizationRequestResolver(new CustomAuthorizationRequestResolver(this.clientRegistrationRepository))
+            .and().and().rememberMe();
 
         http.csrf().disable();
         http.headers().frameOptions().disable();
