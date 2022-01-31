@@ -104,7 +104,7 @@ public class GmailService {
      * @return Gmail
      */
     private Gmail getGmailClient(Long userId) {
-        Credential credential = credentialService.getCredential(userId);
+        Credential credential = credentialService.getCredential(userId).orElseThrow();
         return new Gmail.Builder(HttpUtil.getHttpTransport(), GsonFactory.getDefaultInstance(), credential)
                 .setApplicationName(APPLICATION_NAME)
                 .build();

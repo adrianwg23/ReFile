@@ -32,7 +32,7 @@ public class AuthController {
         String name = principal.getAttribute("name");
         User user = userService.putUser(email, name);
 
-        if (credentialService.getCredential(user.getUserId()) == null) {
+        if (credentialService.getCredential(user.getUserId()).isEmpty()) {
             String accessToken = client.getAccessToken().getTokenValue();
             String refreshToken = client.getRefreshToken().getTokenValue();
             credentialService.saveCredential(user.getUserId(), accessToken, refreshToken);

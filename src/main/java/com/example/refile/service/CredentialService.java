@@ -12,6 +12,7 @@ import lombok.SneakyThrows;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -35,7 +36,7 @@ public class CredentialService {
         credentialStore.writeCredential(userId, credential);
     }
 
-    public Credential getCredential(Long userId) {
+    public Optional<Credential> getCredential(Long userId) {
         return credentialStore.getCredential(userId);
     }
 }

@@ -16,6 +16,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -38,8 +39,8 @@ public class InMemoryCredentialStore implements CredentialStore, CredentialRefre
     }
 
     @Override
-    public Credential getCredential(Long userId) {
-        return credentialMap.get(userId);
+    public Optional<Credential> getCredential(Long userId) {
+        return credentialMap.containsKey(userId) ? Optional.of(credentialMap.get(userId)) : Optional.empty();
     }
 
     @Override
