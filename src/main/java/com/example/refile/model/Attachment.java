@@ -1,6 +1,8 @@
 package com.example.refile.model;
 
 import com.example.refile.util.StringListConverter;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -8,9 +10,11 @@ import javax.persistence.*;
 import java.util.Date;
 import java.util.List;
 
+@Builder
 @Data
 @Entity
 @NoArgsConstructor
+@AllArgsConstructor
 @Table(name="attachments")
 public class Attachment {
 
