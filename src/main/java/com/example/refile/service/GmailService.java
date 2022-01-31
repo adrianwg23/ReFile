@@ -53,6 +53,7 @@ public class GmailService {
         for (Message message : messageList) {
             System.out.println("\n--------------\n");
             System.out.println(message);
+            // TODO: make each execute async
             for (MessagePart part : message.getPayload().getParts()) {
                 if (part.getBody().getAttachmentId() != null) {
                     String fileName = part.getFilename();
@@ -86,6 +87,7 @@ public class GmailService {
             messageIdList.addAll(response.getMessages());
         }
 
+        // TODO: make each execute async
         List<Message> messageList = new ArrayList<>();
         for (Message messageId : messageIdList) {
             Message message = gmail.users().messages().get(USER_ID, messageId.getId()).execute();
