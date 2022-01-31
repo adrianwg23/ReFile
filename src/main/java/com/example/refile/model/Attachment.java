@@ -35,9 +35,12 @@ public class Attachment {
     @Column(name = "label_ids")
     private List<String> labelIds;
 
-    private String url;
+    private String name;
     private String extension;
     private String sender;
     private String thread;
     private String subject;
+
+    @Transient
+    private String url;
 }
