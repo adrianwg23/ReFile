@@ -6,6 +6,9 @@ import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
 import org.springframework.stereotype.Service;
 
+import java.net.URL;
+import java.util.concurrent.TimeUnit;
+
 @Service
 public class GCSService {
 
@@ -21,5 +24,7 @@ public class GCSService {
         BlobId blobId = BlobId.of(bucket, fileName);
         BlobInfo blobInfo = BlobInfo.newBuilder(blobId).build();
         storage.create(blobInfo, attachmentData);
+        URL url = storage.signUrl(blobInfo, 1, TimeUnit.MINUTES, Storage.SignUrlOption.withV4Signature());
+//        System.out.println(url + "\n");
     }
 }
