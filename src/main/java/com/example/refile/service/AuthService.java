@@ -43,7 +43,7 @@ public class AuthService {
         User user;
 
         if (optionalUser.isEmpty()) {
-            user = new User(email);
+            user = new User(email, "test");
             userRepository.save(user);
             authorizationFlow.createAndStoreCredential(tokenResponse, String.valueOf(user.getUserId()));
         } else {

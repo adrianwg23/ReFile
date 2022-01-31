@@ -1,5 +1,6 @@
 package com.example.refile.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -17,6 +18,9 @@ public class User {
     @GeneratedValue
     private Long userId;
     private String email;
+    private String name;
+
+    @JsonIgnore
     @OneToMany(
             mappedBy = "user",
             cascade = CascadeType.ALL,
@@ -24,7 +28,8 @@ public class User {
     )
     private List<Attachment> attachments = new ArrayList<>();
 
-    public User(String email) {
+    public User(String email, String name) {
         this.email = email;
+        this.name = name;
     }
 }

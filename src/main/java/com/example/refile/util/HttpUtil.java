@@ -13,7 +13,7 @@ public class HttpUtil {
             return GoogleNetHttpTransport.newTrustedTransport();
         } catch (GeneralSecurityException | IOException e) {
             e.printStackTrace();
+            throw new RuntimeException();
         }
-        return null;
     }
 }
