@@ -26,23 +26,26 @@ public class GmailService {
 
     private final GCSService gcsService;
     private final CredentialService credentialService;
-    private final UserRepository userRepository;
 
     /**
      * Retrieves attachments for a given user from the database. If attachments are empty, a sync will be be made to
      * fetch attachments from Gmail.
      *
-     * @param userId User Id of the user
+     * @param user User
      * @return List of Attachments belonging to the user
      */
-    public List<Attachment> getAttachments(Long userId) {
-        User user = userRepository.findById(userId).get();
+    public List<Attachment> getAttachments(User user) {
+        List<Attachment> attachments = user.getAttachments();
+
+        if (attachments.isEmpty()) {
+            syncAttachments(user);
+        }
         return user.getAttachments();
     }
 
-    public void syncAttachments(Long userId) {
+    public void syncAttachments(User user) {
         try {
-            Gmail service = getGmailClient(userId);
+            Gmail service = getGmailClient(user.getUserId());
 
             Gmail.Users.Messages.List request = service.users().messages().list("me").setQ("has:attachment");
 
@@ -88,6 +91,7 @@ public class GmailService {
 
     /**
      * Returns a new Gmail Client instance
+     *
      * @param userId User ID of the user
      * @return Gmail
      */
