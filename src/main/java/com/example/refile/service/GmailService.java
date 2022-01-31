@@ -28,12 +28,19 @@ public class GmailService {
     private final CredentialService credentialService;
     private final UserRepository userRepository;
 
+    /**
+     * Retrieves attachments for a given user from the database. If attachments are empty, a sync will be be made to
+     * fetch attachments from Gmail.
+     *
+     * @param userId User Id of the user
+     * @return List of Attachments belonging to the user
+     */
     public List<Attachment> getAttachments(Long userId) {
         User user = userRepository.findById(userId).get();
         return user.getAttachments();
     }
 
-    public void writeAttachments(Long userId) {
+    public void syncAttachments(Long userId) {
         try {
             Gmail service = getGmailClient(userId);
 

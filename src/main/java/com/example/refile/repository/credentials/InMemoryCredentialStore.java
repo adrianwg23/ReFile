@@ -1,13 +1,15 @@
 package com.example.refile.repository.credentials;
 
 import com.google.api.client.auth.oauth2.Credential;
+import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.Map;
 
+@Component
 public class InMemoryCredentialStore implements CredentialStore {
 
-    private Map<Long, Credential> credentialMap = new HashMap<>();
+    private final Map<Long, Credential> credentialMap = new HashMap<>();
 
     @Override
     public void writeCredential(Long userId, Credential credential) {
@@ -16,6 +18,6 @@ public class InMemoryCredentialStore implements CredentialStore {
 
     @Override
     public Credential getCredential(Long userId) {
-        return null;
+        return credentialMap.get(userId);
     }
 }
