@@ -24,7 +24,11 @@ public class GCSService {
         BlobId blobId = BlobId.of(bucket, fileName);
         BlobInfo blobInfo = BlobInfo.newBuilder(blobId).build();
         storage.create(blobInfo, attachmentData);
-        URL url = storage.signUrl(blobInfo, 1, TimeUnit.MINUTES, Storage.SignUrlOption.withV4Signature());
-//        System.out.println(url + "\n");
+    }
+
+    public URL getSignedUrl(String bucket, String filename) {
+        BlobId blobId = BlobId.of(bucket, filename);
+        BlobInfo blobInfo = BlobInfo.newBuilder(blobId).build();
+        return storage.signUrl(blobInfo, 1, TimeUnit.MINUTES, Storage.SignUrlOption.withV4Signature());
     }
 }

@@ -52,12 +52,14 @@ public class GmailService {
         return user.getAttachments();
     }
 
-    public void syncAttachments(User user, boolean refresh) throws IOException {
+    public List<Attachment> syncAttachments(User user, boolean refresh) throws IOException {
         if (refresh) {
             user.getAttachments().forEach(attachmentService::deleteAttachment);
             user.getAttachments().clear();
         }
+        List<Attachment> attachments = new ArrayList<>();
         Gmail gmail = getGmailClient(user.getUserId());
+
         List<Message> messageList = getMessagesWithAttachments(gmail);
 
         // TODO: make each execute async
@@ -83,11 +85,17 @@ public class GmailService {
             MessagePartBody attachmentPartBody = getAttachmentPartBody(message.getId(), attachmentId, gmail);
 
             byte[] attachmentData = Base64.decodeBase64(attachmentPartBody.getData());
-            this.gcsService.write(GCSService.ATTACHMENTS_BUCKET, fileName, attachmentData);
+            gcsService.write(GCSService.ATTACHMENTS_BUCKET, fileName, attachmentData);
+            String url = gcsService.getSignedUrl(GCSService.ATTACHMENTS_BUCKET, fileName).toString();
 
+            attachment.setUrl(url);
+            attachments.add(attachment);
             attachmentService.putAttachment(attachment);
-            user.getAttachments().add(attachment);
         }
+
+        user.setAttachments(attachments);
+
+        return attachments;
     }
 
     private void extractMessageMetadata(Attachment attachment, Message message) {
