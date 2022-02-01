@@ -119,12 +119,10 @@ public class GmailService {
     }
 
     private MessagePartBody getAttachmentPartBody(String messageId, String attachmentId, Gmail gmail) throws IOException {
-        MessagePartBody attachmentPartBody = gmail.users()
-                                                  .messages()
-                                                  .attachments()
-                                                  .get(USER_ID, messageId, attachmentId).execute();
-
-        return attachmentPartBody;
+        return gmail.users()
+                    .messages()
+                    .attachments()
+                    .get(USER_ID, messageId, attachmentId).execute();
     }
 
     private List<Message> getMessagesWithAttachments(Gmail gmail) throws IOException {
