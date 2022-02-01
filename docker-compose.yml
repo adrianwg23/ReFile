@@ -1,0 +1,21 @@
+version: "3.9"  # optional since v1.27.0
+services:
+  mysql:
+    image: mysql:5.7
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=refile
+    ports:
+      - "3306:3306"
+    container_name: mysql
+  refile:
+    depends_on:
+      - mysql
+    build: .
+    image: adrianwg23/refile:latest
+    restart: on-failure
+    ports:
+      - "8080:8080"
+    environment:
+      - MYSQL_HOST=mysql
+    container_name: refile
