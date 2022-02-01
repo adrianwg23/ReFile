@@ -24,9 +24,9 @@ public class RefileController {
         return ResponseEntity.ok(gmailService.getAttachments(user));
     }
 
-    @PostMapping("sync-attachments/{userId}")
+    @GetMapping("sync-attachments/{userId}")
     public void syncAttachments(@PathVariable Long userId) throws IOException {
         User user = userService.getUser(userId);
-        gmailService.syncAttachments(user);
+        gmailService.syncAttachments(user, true);
     }
 }

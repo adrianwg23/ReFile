@@ -1,6 +1,6 @@
 package com.example.refile.model;
 
-import com.example.refile.util.StringListConverter;
+import com.example.refile.util.StringSetConverter;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -8,7 +8,8 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.util.Date;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 @Builder
 @Data
@@ -31,14 +32,17 @@ public class Attachment {
     @Column(name = "created_date", updatable = false)
     private Date createdDate;
 
-    @Convert(converter = StringListConverter.class)
+    @Convert(converter = StringSetConverter.class)
     @Column(name = "label_ids")
-    private List<String> labelIds;
+    private Set<String> labelIds = new HashSet<>();
+
+    @Convert(converter = StringSetConverter.class)
+    @Column(name = "categories")
+    private Set<String> categories = new HashSet<>();
 
     private String name;
     private String extension;
     private String sender;
-    private String thread;
     private String subject;
 
     @Transient
