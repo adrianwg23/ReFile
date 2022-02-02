@@ -4,7 +4,6 @@ import com.example.refile.model.User;
 import com.example.refile.service.CredentialService;
 import com.example.refile.service.UserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.annotation.RegisteredOAuth2AuthorizedClient;
@@ -25,8 +24,8 @@ public class AuthController {
         return new ModelAndView("redirect:/oauth2/authorization/google");
     }
 
-    @GetMapping("/authenticated-user")
-    public ResponseEntity<User> authenticatedUser(@RegisteredOAuth2AuthorizedClient OAuth2AuthorizedClient client,
+    @GetMapping("/oauth-callback")
+    public ModelAndView authenticatedUser(@RegisteredOAuth2AuthorizedClient OAuth2AuthorizedClient client,
                                           @AuthenticationPrincipal OAuth2User principal) {
         String email = principal.getAttribute("email");
         String name = principal.getAttribute("name");
@@ -38,6 +37,6 @@ public class AuthController {
             credentialService.saveCredential(user.getUserId(), accessToken, refreshToken);
         }
 
-        return ResponseEntity.ok(user);
+        return new ModelAndView(String.format("redirect:http://localhost:3000?userId=%d", user.getUserId()));
     }
 }

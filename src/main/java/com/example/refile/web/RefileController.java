@@ -18,6 +18,12 @@ public class RefileController {
     private final UserService userService;
     private final GmailService gmailService;
 
+    @GetMapping("/users/{userId}")
+    public ResponseEntity<User> users(@PathVariable Long userId) {
+        User user = userService.getUser(userId);
+        return ResponseEntity.ok(user);
+    }
+
     @GetMapping("/attachments/{userId}")
     public ResponseEntity<List<Attachment>> attachments(@PathVariable Long userId) throws IOException {
         User user = userService.getUser(userId);
