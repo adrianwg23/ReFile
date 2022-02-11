@@ -51,10 +51,6 @@ dependencies {
 	runtimeOnly 'org.postgresql:postgresql'
 }
 
-
-dependencyManagement {
-}
-
 test {
 	useJUnitPlatform()
 }
