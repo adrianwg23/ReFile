@@ -11,7 +11,7 @@ import java.util.*;
 @RequiredArgsConstructor
 public class CategorizationService {
 
-    private static Map<String, Set<String>> CATEGORIES = ImmutableMap.of(
+    private static final Map<String, Set<String>> CATEGORIES = ImmutableMap.of(
             "Invoice", ImmutableSet.of("invoice", "invoices"),
             "Receipt", ImmutableSet.of("receipt", "receipts"),
             "Contract", ImmutableSet.of("contract", "contracts")
