@@ -12,6 +12,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.ModelAndView;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+
 @RestController
 @RequiredArgsConstructor
 public class AuthController {
@@ -20,8 +24,19 @@ public class AuthController {
     private final CredentialService credentialService;
 
     @GetMapping("/login")
-    public ModelAndView login() {
-        return new ModelAndView("redirect:/oauth2/authorization/google");
+    public void login(HttpServletRequest request,
+                      HttpServletResponse response) throws IOException {
+        if (request.getHeader("Origin") != null) {
+            response.resetBuffer();
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.setHeader("Content-Type", "application/json");
+            response.getOutputStream().print("{\"errorMessage\":\"HTTP requests with origin forbidden. " +
+                    "Try redirecting to this endpoint inside your browser instead.\"}");
+            response.flushBuffer();
+        } else {
+            response.setHeader("Location", "http://localhost:8080/oauth2/authorization/google");
+            response.setStatus(302);
+        }
     }
 
     @GetMapping("/oauth-callback")
