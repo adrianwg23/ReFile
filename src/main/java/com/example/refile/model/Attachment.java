@@ -40,11 +40,11 @@ public class Attachment {
     @Column(name = "categories")
     private Set<String> categories = new HashSet<>();
 
+    @Column(name = "g_id", length = 1000)
+    private String gId;
+
     private String name;
     private String extension;
     private String sender;
     private String subject;
-
-    @Transient
-    private String url;
 }
