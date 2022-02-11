@@ -32,7 +32,6 @@ public class GmailService {
     private static final String USER_ID = "me";
 
     private final CategorizationService categorizationService;
-    private final GCSService gcsService;
     private final CredentialService credentialService;
     private final AttachmentService attachmentService;
 
@@ -82,13 +81,10 @@ public class GmailService {
             attachment.setExtension(extension);
 
             String attachmentId = attachmentPart.getBody().getAttachmentId();
-            MessagePartBody attachmentPartBody = getAttachmentPartBody(message.getId(), attachmentId, gmail);
+//            MessagePartBody attachmentPartBody = getAttachmentPartBody(message.getId(), attachmentId, gmail);
 
-            byte[] attachmentData = Base64.decodeBase64(attachmentPartBody.getData());
-            gcsService.write(GCSService.ATTACHMENTS_BUCKET, fileName, attachmentData);
-            String url = gcsService.getSignedUrl(GCSService.ATTACHMENTS_BUCKET, fileName).toString();
-
-            attachment.setUrl(url);
+            System.out.println(attachmentId);
+            attachment.setGId(attachmentId);
             attachments.add(attachment);
             attachmentService.putAttachment(attachment);
         }
