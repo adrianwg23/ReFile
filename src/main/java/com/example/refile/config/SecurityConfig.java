@@ -32,29 +32,27 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http.cors()
             .and()
-            .exceptionHandling()
-            .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
+                .exceptionHandling()
+                .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
             .and()
-            .authorizeRequests()
-            .antMatchers("/login", "/h2-console/**").permitAll()
-            .anyRequest().authenticated()
+                .authorizeRequests()
+                .antMatchers("/login").permitAll()
+                .anyRequest().authenticated()
+            .and()
+                .logout() // TODO: endpoint to redirect back to frontend login page
             .and()
             .oauth2Login()
-            .defaultSuccessUrl("/oauth-callback", true)
-            .authorizationEndpoint()
-            .authorizationRequestResolver(new CustomAuthorizationRequestResolver(this.clientRegistrationRepository))
-            .and().and().rememberMe();
+                .defaultSuccessUrl("/oauth-callback", true)
+                .authorizationEndpoint()
+                .authorizationRequestResolver(new CustomAuthorizationRequestResolver(this.clientRegistrationRepository));
 
         http.csrf()
             .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse());
-        // for h2 access
-        http.headers().frameOptions().disable();
 
         // https config (https://devcenter.heroku.com/articles/preparing-a-spring-boot-app-for-production-on-heroku)
         http.requiresChannel()
             .requestMatchers(r -> r.getHeader("X-Forwarded-Proto") != null)
             .requiresSecure();
-
     }
 
     @Bean
