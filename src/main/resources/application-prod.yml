@@ -1,0 +1,7 @@
+spring:
+  datasource:
+    url: ${DATABASE_CONFIG}
+    driver-class-name: org.postgresql.Driver
+
+app:
+  host: https://refile.herokuapp.com

@@ -1,8 +1,4 @@
 spring:
-  datasource:
-    url: ${DATABASE_CONFIG}
-    driver-class-name: org.postgresql.Driver
-
   jpa:
     show-sql: true
     hibernate:
@@ -20,6 +16,3 @@ spring:
               - "https://www.googleapis.com/auth/userinfo.profile"
               - "https://www.googleapis.com/auth/gmail.readonly"
             access-type: "offline"
-
-app:
-  host: https://refile.herokuapp.com
