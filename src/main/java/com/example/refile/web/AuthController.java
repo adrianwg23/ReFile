@@ -4,6 +4,7 @@ import com.example.refile.model.User;
 import com.example.refile.service.CredentialService;
 import com.example.refile.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.annotation.RegisteredOAuth2AuthorizedClient;
@@ -23,6 +24,9 @@ public class AuthController {
     private final UserService userService;
     private final CredentialService credentialService;
 
+    @Value("${app.host}")
+    private String host;
+
     @GetMapping("/login")
     public void login(HttpServletRequest request,
                       HttpServletResponse response) throws IOException {
@@ -34,7 +38,7 @@ public class AuthController {
                     "Try redirecting to this endpoint inside your browser instead.\"}");
             response.flushBuffer();
         } else {
-            response.setHeader("Location", "http://localhost:8080/oauth2/authorization/google");
+            response.setHeader("Location", host + "/oauth2/authorization/google");
             response.setStatus(302);
         }
     }
