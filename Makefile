@@ -1,7 +1,9 @@
 build-jar:
-	./gradlew bootJar
+	./gradlew build -x check
 
 build-image:
 	docker build -t adrianwg23/refile .
 
-.PHONY: build-jar build-image
+build: build-jar build-image
+
+.PHONY: build-jar build-image build
