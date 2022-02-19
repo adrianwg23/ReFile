@@ -7,3 +7,4 @@ spring:
 
 app:
   host: http://localhost:8080
+  front-end: http://localhost:3000

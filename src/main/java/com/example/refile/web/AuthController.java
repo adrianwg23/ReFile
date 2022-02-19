@@ -27,6 +27,9 @@ public class AuthController {
     @Value("${app.host}")
     private String host;
 
+    @Value("${app.front-end}")
+    private String frontEndHost;
+
     @GetMapping("/login")
     public void login(HttpServletRequest request,
                       HttpServletResponse response) throws IOException {
@@ -56,6 +59,6 @@ public class AuthController {
             credentialService.saveCredential(user.getUserId(), accessToken, refreshToken);
         }
 
-        return new ModelAndView(String.format("redirect:http://localhost:3000?userId=%d", user.getUserId()));
+        return new ModelAndView(String.format("redirect:%s?userId=%d", frontEndHost, user.getUserId()));
     }
 }

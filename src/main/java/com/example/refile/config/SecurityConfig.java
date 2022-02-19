@@ -2,6 +2,7 @@ package com.example.refile.config;
 
 import com.google.common.collect.ImmutableList;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
@@ -27,6 +28,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
     private ClientRegistrationRepository clientRegistrationRepository;
+
+    @Value("${app.front-end}")
+    private String frontEndHost;
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
@@ -58,7 +62,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         final CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(ImmutableList.of("http://localhost:3000"));
+        configuration.setAllowedOrigins(ImmutableList.of(frontEndHost));
         configuration.setAllowedMethods(ImmutableList.of("HEAD",
                 "GET", "POST", "PUT", "DELETE", "PATCH"));
         // setAllowCredentials(true) is important, otherwise:
