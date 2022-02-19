@@ -47,7 +47,8 @@ public class AuthController {
     }
 
     @GetMapping("/oauth-callback")
-    public ModelAndView authenticatedUser(@RegisteredOAuth2AuthorizedClient OAuth2AuthorizedClient client,
+    public ModelAndView authenticatedUser(HttpServletRequest request,
+                                          @RegisteredOAuth2AuthorizedClient OAuth2AuthorizedClient client,
                                           @AuthenticationPrincipal OAuth2User principal) {
         String email = principal.getAttribute("email");
         String name = principal.getAttribute("name");
@@ -59,6 +60,6 @@ public class AuthController {
             credentialService.saveCredential(user.getUserId(), accessToken, refreshToken);
         }
 
-        return new ModelAndView(String.format("redirect:%s?userId=%d", frontEndHost, user.getUserId()));
+        return new ModelAndView(String.format("redirect:http://localhost:3000?userId=%d", user.getUserId()));
     }
 }
