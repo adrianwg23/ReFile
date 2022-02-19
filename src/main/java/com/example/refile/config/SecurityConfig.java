@@ -50,8 +50,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .authorizationEndpoint()
                 .authorizationRequestResolver(new CustomAuthorizationRequestResolver(this.clientRegistrationRepository));
 
-//        http.csrf()
-//            .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse());
+        http.csrf()
+            .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse());
 
         // https config (https://devcenter.heroku.com/articles/preparing-a-spring-boot-app-for-production-on-heroku)
         http.requiresChannel()
