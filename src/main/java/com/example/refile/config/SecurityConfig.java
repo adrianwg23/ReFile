@@ -3,6 +3,7 @@ package com.example.refile.config;
 import com.google.common.collect.ImmutableList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
@@ -29,12 +30,15 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Autowired
     private ClientRegistrationRepository clientRegistrationRepository;
 
+    @Value("${spring.profiles.active}")
+    private String activeProfile;
+
+    private static final String testProfile = "test";
+
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http.cors()
-            .and()
-                .exceptionHandling()
-                .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
+        http.exceptionHandling()
+            .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
             .and()
                 .authorizeRequests()
                 .antMatchers("/login").permitAll()
@@ -54,9 +58,14 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http.requiresChannel()
             .requestMatchers(r -> r.getHeader("X-Forwarded-Proto") != null)
             .requiresSecure();
+
+        if (testProfile.equals(activeProfile)) {
+            http.cors();
+        }
     }
 
     @Bean
+    @ConditionalOnProperty(name = "spring.profiles.active", havingValue = testProfile)
     CorsConfigurationSource corsConfigurationSource() {
         final CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(ImmutableList.of("http://localhost:3000"));
