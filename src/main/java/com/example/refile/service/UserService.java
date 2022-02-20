@@ -12,7 +12,6 @@ import java.util.Optional;
 @AllArgsConstructor
 public class UserService {
 
-    private final CredentialService credentialService;
     private final UserRepository userRepository;
 
     public User getUser(Long id) {
