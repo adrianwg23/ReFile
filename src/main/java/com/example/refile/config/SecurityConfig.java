@@ -25,6 +25,8 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import static com.example.refile.util.Constants.TEST_PROFILE;
+
 @Configuration
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
@@ -33,8 +35,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Value("${spring.profiles.active}")
     private String activeProfile;
-
-    private static final String testProfile = "test";
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
@@ -60,13 +60,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             .requestMatchers(r -> r.getHeader("X-Forwarded-Proto") != null)
             .requiresSecure();
 
-        if (testProfile.equals(activeProfile)) {
+        if (TEST_PROFILE.equals(activeProfile)) {
             http.cors();
         }
     }
 
     @Bean
-    @ConditionalOnProperty(name = "spring.profiles.active", havingValue = testProfile)
+    @ConditionalOnProperty(name = "spring.profiles.active", havingValue = TEST_PROFILE)
     CorsConfigurationSource corsConfigurationSource() {
         final CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(ImmutableList.of("http://localhost:3000"));
@@ -82,12 +82,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
-    }
-
-    @Bean
-    @ConditionalOnProperty(name = "spring.profiles.active", havingValue = testProfile)
-    public CookieSameSiteSupplier applicationCookieSameSiteSupplier() {
-        return CookieSameSiteSupplier.ofNone().whenHasNameMatching("XSRF-TOKEN");
     }
 
     static class CustomAuthorizationRequestResolver implements OAuth2AuthorizationRequestResolver {
