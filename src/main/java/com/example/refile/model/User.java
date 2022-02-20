@@ -42,6 +42,6 @@ public class User {
 
     private String name;
 
-    @Column(name = "refreh_token", length = 500)
+    @Column(name = "refresh_token", length = 500)
     private String refreshToken;
 }
