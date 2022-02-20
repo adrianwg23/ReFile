@@ -13,6 +13,6 @@ public class SameSiteCookieConfig {
     @Bean
     @ConditionalOnProperty(name = "spring.profiles.active", havingValue = TEST_PROFILE)
     public CookieSameSiteSupplier applicationCookieSameSiteSupplier() {
-        return CookieSameSiteSupplier.ofLax().whenHasNameMatching("XSRF-TOKEN");
+        return CookieSameSiteSupplier.ofNone().whenHasNameMatching("XSRF-TOKEN");
     }
 }
