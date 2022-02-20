@@ -56,7 +56,13 @@ public class AuthController {
 
         if (credentialService.getCredential(user.getUserId()).isEmpty()) {
             String accessToken = client.getAccessToken().getTokenValue();
-            String refreshToken = client.getRefreshToken().getTokenValue();
+            String refreshToken;
+            if (client.getRefreshToken() != null) {
+                refreshToken = client.getRefreshToken().getTokenValue();
+                userService.setRefreshToken(user, refreshToken);
+            } else {
+                refreshToken = user.getRefreshToken();
+            }
             credentialService.saveCredential(user.getUserId(), accessToken, refreshToken);
         }
 

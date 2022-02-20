@@ -1,5 +1,6 @@
 package com.example.refile.repository.credentials;
 
+import com.example.refile.util.TokenUtil;
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.auth.oauth2.CredentialRefreshListener;
 import com.google.api.client.auth.oauth2.TokenErrorResponse;
@@ -10,17 +11,9 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PreDestroy;
 import java.io.IOException;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
-
-import static com.example.refile.util.Constants.REVOKE_TOKEN_ENDPOINT;
 
 @Component
 public class InMemoryCredentialStore implements CredentialStore, CredentialRefreshListener {
@@ -49,18 +42,8 @@ public class InMemoryCredentialStore implements CredentialStore, CredentialRefre
         String accessToken = credential.getAccessToken();
         String revokedAccessToken = tokenMap.get(credential.getRefreshToken());
 
-        HttpClient client = HttpClient.newHttpClient();
-        HttpRequest request = HttpRequest.newBuilder(URI.create(REVOKE_TOKEN_ENDPOINT + revokedAccessToken))
-                                         .build();
-
-        client.sendAsync(request, HttpResponse.BodyHandlers.ofString())
-              .thenAccept(response -> {
-                  if (response.statusCode() == 200) {
-                      logger.info("successfully revoked access token");
-                      tokenMap.replace(refreshToken, accessToken);
-                  }
-              });
-        System.out.println("refreshed: " + credential);
+        TokenUtil.revokeToken(revokedAccessToken);
+        tokenMap.replace(refreshToken, accessToken);
     }
 
     @Override
@@ -70,28 +53,10 @@ public class InMemoryCredentialStore implements CredentialStore, CredentialRefre
 
     @PreDestroy
     public void onExit() {
-        HttpClient client = HttpClient.newHttpClient();
+        List<CompletableFuture<Void>> futures = new ArrayList<>();
         tokenMap.forEach((refreshToken, accessToken) -> {
-            HttpRequest request1 = HttpRequest.newBuilder(URI.create(REVOKE_TOKEN_ENDPOINT + refreshToken))
-                                              .build();
-
-            HttpRequest request2 = HttpRequest.newBuilder(URI.create(REVOKE_TOKEN_ENDPOINT + accessToken))
-                                              .build();
-            CompletableFuture<Void> future1 = client.sendAsync(request1, HttpResponse.BodyHandlers.ofString())
-                                              .thenAccept(response -> {
-                                                  if (response.statusCode() == 200) {
-                                                      logger.info("successfully revoked refresh token {}", refreshToken);
-                                                  }
-                                              });
-
-            CompletableFuture<Void> future2 = client.sendAsync(request2, HttpResponse.BodyHandlers.ofString())
-                                                    .thenAccept(response -> {
-                                                        if (response.statusCode() == 200) {
-                                                            logger.info("successfully revoked access token {}", accessToken);
-                                                        }
-                                                    });
-
-            CompletableFuture.allOf(future1, future2).join();
+            futures.add(TokenUtil.revokeToken(accessToken));
         });
+        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
     }
 }

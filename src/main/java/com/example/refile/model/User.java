@@ -41,4 +41,7 @@ public class User {
     private String email;
 
     private String name;
+
+    @Column(name = "refreh_token", length = 500)
+    private String refreshToken;
 }
