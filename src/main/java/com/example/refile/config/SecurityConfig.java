@@ -29,9 +29,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Autowired
     private ClientRegistrationRepository clientRegistrationRepository;
 
-    @Value("${app.front-end}")
-    private String frontEndHost;
-
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.cors()

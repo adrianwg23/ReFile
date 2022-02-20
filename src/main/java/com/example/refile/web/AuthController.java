@@ -60,6 +60,6 @@ public class AuthController {
             credentialService.saveCredential(user.getUserId(), accessToken, refreshToken);
         }
 
-        return new ModelAndView(String.format("redirect:http://localhost:3000?userId=%d", user.getUserId()));
+        return new ModelAndView(String.format("redirect:%s?userId=%d", frontEndHost, user.getUserId()));
     }
 }
