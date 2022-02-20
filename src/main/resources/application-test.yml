@@ -6,7 +6,7 @@ spring:
     driver-class-name: org.postgresql.Driver
 
 app:
-  host: https://refile-dev.herokuapp.com
+  host: https://refile.herokuapp.com
   front-end: http://localhost:3000
 
 server:
