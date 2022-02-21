@@ -7,4 +7,4 @@ spring:
 
 app:
   host: https://refile.herokuapp.com
-  front-end: https://refileforemail.github.io/Refile/
+  front-end: http://localhost:3000
