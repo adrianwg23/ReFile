@@ -22,9 +22,9 @@ public class UserService {
 
         if (optionalUser.isEmpty()) {
             User user = User.builder()
-                    .name(name)
-                    .email(email)
-                    .build();
+                            .name(name)
+                            .email(email)
+                            .build();
             userRepository.save(user);
             return user;
         }
