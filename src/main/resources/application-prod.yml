@@ -8,3 +8,9 @@ spring:
 app:
   host: https://refile.herokuapp.com
   front-end: https://refileforemail.github.io/Refile/
+
+server:
+  servlet:
+    session:
+      cookie:
+        same-site: "none"
