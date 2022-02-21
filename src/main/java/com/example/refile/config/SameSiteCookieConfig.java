@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Configuration;
 public class SameSiteCookieConfig {
 
     @Bean
-    @ConditionalOnProperty(name="spring.profile.active", havingValue="test")
+    @ConditionalOnProperty(name="spring.profiles.active", havingValue="test")
     public CookieSameSiteSupplier applicationCookieSameSiteSupplier() {
         return CookieSameSiteSupplier.ofNone().whenHasNameMatching("XSRF-TOKEN");
     }
