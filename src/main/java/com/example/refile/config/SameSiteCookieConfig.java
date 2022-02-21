@@ -1,5 +1,6 @@
 package com.example.refile.config;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.web.servlet.server.CookieSameSiteSupplier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -8,6 +9,7 @@ import org.springframework.context.annotation.Configuration;
 public class SameSiteCookieConfig {
 
     @Bean
+    @ConditionalOnProperty(name="spring.profile.active", havingValue="test")
     public CookieSameSiteSupplier applicationCookieSameSiteSupplier() {
         return CookieSameSiteSupplier.ofNone().whenHasNameMatching("XSRF-TOKEN");
     }

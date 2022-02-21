@@ -16,9 +16,3 @@ spring:
               - "https://www.googleapis.com/auth/userinfo.profile"
               - "https://www.googleapis.com/auth/gmail.readonly"
             access-type: "offline"
-
-server:
-  servlet:
-    session:
-      cookie:
-        same-site: "none"

@@ -8,3 +8,9 @@ spring:
 app:
   host: https://refile.herokuapp.com
   front-end: http://localhost:3000
+
+server:
+  servlet:
+    session:
+      cookie:
+        same-site: "none"

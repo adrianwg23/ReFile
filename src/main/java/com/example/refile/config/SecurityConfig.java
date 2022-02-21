@@ -2,6 +2,8 @@ package com.example.refile.config;
 
 import com.google.common.collect.ImmutableList;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
@@ -28,6 +30,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Autowired
     private ClientRegistrationRepository clientRegistrationRepository;
 
+    @Value("${spring.profile.active}")
+    String activeProfile;
+
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.exceptionHandling()
@@ -44,7 +49,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .authorizationEndpoint()
                 .authorizationRequestResolver(new CustomAuthorizationRequestResolver(this.clientRegistrationRepository));
 
-        http.cors();
+        if ("test".equals(activeProfile)) {
+            http.cors();
+        }
 
         http.csrf()
             .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse());
@@ -56,6 +63,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
     @Bean
+    @ConditionalOnProperty(name="spring.profile.active", havingValue="test")
     CorsConfigurationSource corsConfigurationSource() {
         final CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(ImmutableList.of("http://localhost:3000", "https://refile.email"));
