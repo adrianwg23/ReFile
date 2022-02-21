@@ -13,37 +13,29 @@ import javax.annotation.PreDestroy;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 public class InMemoryCredentialStore implements CredentialStore, CredentialRefreshListener {
 
-    private final Map<Long, Credential> credentialMap = new HashMap<>();
+    private final Map<Long, Credential> idToCredentialMap = new HashMap<>();
+    private final Map<Credential, Long> credentialToIdMap = new HashMap<>();
 
-    // refresh token as key
-    private final Map<String, String> tokenMap = new ConcurrentHashMap<>();
-
-    private final Logger logger = LoggerFactory.getLogger(InMemoryCredentialStore.class);
+    private static final Logger logger = LoggerFactory.getLogger(InMemoryCredentialStore.class);
 
     @Override
     public void writeCredential(Long userId, Credential credential) {
-        credentialMap.put(userId, credential);
-        tokenMap.put(credential.getRefreshToken(), credential.getAccessToken());
+        idToCredentialMap.put(userId, credential);
+        credentialToIdMap.put(credential, userId);
     }
 
     @Override
     public Optional<Credential> getCredential(Long userId) {
-        return credentialMap.containsKey(userId) ? Optional.of(credentialMap.get(userId)) : Optional.empty();
+        return idToCredentialMap.containsKey(userId) ? Optional.of(idToCredentialMap.get(userId)) : Optional.empty();
     }
 
     @Override
     public void onTokenResponse(Credential credential, TokenResponse tokenResponse) throws IOException {
-        String refreshToken = credential.getRefreshToken();
-        String accessToken = credential.getAccessToken();
-        String revokedAccessToken = tokenMap.get(credential.getRefreshToken());
-
-        TokenUtil.revokeToken(revokedAccessToken);
-        tokenMap.replace(refreshToken, accessToken);
+        logger.info("refreshed access token for user id {}", credentialToIdMap.get(credential));
     }
 
     @Override
@@ -54,9 +46,7 @@ public class InMemoryCredentialStore implements CredentialStore, CredentialRefre
     @PreDestroy
     public void onExit() {
         List<CompletableFuture<Void>> futures = new ArrayList<>();
-        tokenMap.forEach((refreshToken, accessToken) -> {
-            futures.add(TokenUtil.revokeToken(accessToken));
-        });
+        idToCredentialMap.forEach((k, v) -> futures.add(TokenUtil.revokeToken(v.getAccessToken())));
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
     }
 }

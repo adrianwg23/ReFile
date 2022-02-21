@@ -23,6 +23,9 @@ public class TokenUtil {
                      .thenAccept(response -> {
                          if (response.statusCode() == 200) {
                              logger.info("successfully revoked token {}", token);
+                         } else {
+                             logger.info("failed to revoke token with error code {}", response.statusCode());
+                             logger.info(response.body());
                          }
                      });
     }
