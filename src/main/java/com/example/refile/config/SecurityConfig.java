@@ -30,7 +30,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Autowired
     private ClientRegistrationRepository clientRegistrationRepository;
 
-    @Value("${spring.profile.active}")
+    @Value("${spring.profiles.active}")
     String activeProfile;
 
     @Override
