@@ -3,7 +3,6 @@ package com.example.refile.config;
 import com.google.common.collect.ImmutableList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
@@ -51,8 +50,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
         http.cors();
 
+        CookieCsrfTokenRepository csrfTokenRepository = CookieCsrfTokenRepository.withHttpOnlyFalse();
+        if ("prod".equals(activeProfile)) {
+            csrfTokenRepository.setCookieDomain(".refile.email");
+        }
         http.csrf()
-            .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse());
+            .csrfTokenRepository(csrfTokenRepository);
 
         // https config (https://devcenter.heroku.com/articles/preparing-a-spring-boot-app-for-production-on-heroku)
         http.requiresChannel()
