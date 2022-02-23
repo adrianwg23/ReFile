@@ -104,7 +104,8 @@ public class GmailService {
                 attachment.setSender(header.getValue());
             } else if ("Subject".equals(name)) {
                 attachment.setSubject(header.getValue());
-                List<String> categories = categorizationService.extractCategories(header.getValue());
+                List<String> categories = categorizationService.extractCategories(header.getValue(),
+                        attachment.getUser().getCategories());
                 attachment.getCategories().addAll(categories);
             }
         });
@@ -118,7 +119,7 @@ public class GmailService {
 
         String emailBody = new String(Base64.decodeBase64(currPart.getBody().getData()),
                 StandardCharsets.UTF_8);
-        List<String> categories = categorizationService.extractCategories(emailBody);
+        List<String> categories = categorizationService.extractCategories(emailBody, attachment.getUser().getCategories());
         attachment.getCategories().addAll(categories);
     }
 

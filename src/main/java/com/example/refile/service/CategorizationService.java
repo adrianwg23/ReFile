@@ -1,35 +1,26 @@
 package com.example.refile.service;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
 public class CategorizationService {
 
-    private static final Map<String, Set<String>> CATEGORIES = ImmutableMap.of(
-            "Invoice", ImmutableSet.of("invoice", "invoices"),
-            "Receipt", ImmutableSet.of("receipt", "receipts"),
-            "Contract", ImmutableSet.of("contract", "contracts")
-    );
-
-    public List<String> extractCategories(String text) {
+    public List<String> extractCategories(String text, Set<String> categories) {
         String lowerCaseText = text.toLowerCase();
         List<String> containedCategories = new ArrayList<>();
 
-        CATEGORIES.forEach((category, variants) -> {
-            Optional<String> match = variants.stream().filter(lowerCaseText::contains)
-                                             .findFirst();
-            if (match.isPresent()) {
+        categories.forEach(category -> {
+            if (lowerCaseText.contains(category.toLowerCase())) {
                 containedCategories.add(category);
             }
         });
 
         return containedCategories;
     }
-
 }
