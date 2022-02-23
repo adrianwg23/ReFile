@@ -90,9 +90,6 @@ public class GmailService {
             attachmentService.saveAttachment(attachment);
         }
 
-        user.setAttachments(attachments);
-        userService.saveUser(user);
-
         return attachments;
     }
 
