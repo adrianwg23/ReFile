@@ -34,7 +34,6 @@ public class GmailService {
     private final CategorizationService categorizationService;
     private final CredentialService credentialService;
     private final AttachmentService attachmentService;
-    private final UserService userService;
 
     /**
      * Retrieves attachments for a given user from the database. If attachments are empty, a sync will be be made to
