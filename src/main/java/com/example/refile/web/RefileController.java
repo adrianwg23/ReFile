@@ -1,6 +1,7 @@
 package com.example.refile.web;
 
 import com.example.refile.model.Attachment;
+import com.example.refile.model.CategoryDTO;
 import com.example.refile.model.User;
 import com.example.refile.service.GmailService;
 import com.example.refile.service.UserService;
@@ -34,5 +35,19 @@ public class RefileController {
     public ResponseEntity<List<Attachment>> syncAttachments(@PathVariable Long userId) throws IOException {
         User user = userService.getUser(userId);
         return ResponseEntity.ok(gmailService.syncAttachments(user, true));
+    }
+
+    @GetMapping("/categories/{userId}")
+    public ResponseEntity<?> getCategories(@PathVariable Long userId) {
+        User user = userService.getUser(userId);
+        return ResponseEntity.ok(user.getCategories());
+    }
+
+    @PostMapping("/categories/{userId}")
+    public ResponseEntity<?> addCategory(@PathVariable Long userId, @RequestBody CategoryDTO categoryDTO) {
+        User user = userService.getUser(userId);
+        user.getCategories().add(categoryDTO.getCategory());
+        userService.saveUser(user);
+        return ResponseEntity.ok(user.getCategories());
     }
 }

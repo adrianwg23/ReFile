@@ -17,14 +17,15 @@ public class UserService {
         return userRepository.findById(id).get();
     }
 
+    public User saveUser(User user) {
+        return userRepository.save(user);
+    }
+
     public User putUser(String email, String name) {
         Optional<User> optionalUser = userRepository.findByEmail(email);
 
         if (optionalUser.isEmpty()) {
-            User user = User.builder()
-                            .name(name)
-                            .email(email)
-                            .build();
+            User user = new User(email, name);
             userRepository.save(user);
             return user;
         }

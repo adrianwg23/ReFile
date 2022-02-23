@@ -1,5 +1,6 @@
 package com.example.refile.model;
 
+import com.example.refile.util.StringSetConverter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -8,9 +9,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 
 import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @Builder
 @Data
@@ -44,4 +43,13 @@ public class User {
 
     @Column(name = "refresh_token", length = 500)
     private String refreshToken;
+
+    @Convert(converter = StringSetConverter.class)
+    @Column(name = "categories")
+    private Set<String> categories = Set.of("Contract", "Invoice", "Receipt");
+
+    public User(String email, String name) {
+        this.email = email;
+        this.name = name;
+    }
 }
