@@ -11,7 +11,7 @@ public class AttachmentService {
 
     private final AttachmentRepository attachmentRepository;
 
-    public Attachment putAttachment(Attachment attachment) {
+    public Attachment saveAttachment(Attachment attachment) {
         return attachmentRepository.save(attachment);
     }
 
