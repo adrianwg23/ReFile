@@ -49,9 +49,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .authorizationEndpoint()
                 .authorizationRequestResolver(new CustomAuthorizationRequestResolver(this.clientRegistrationRepository));
 
-        if ("test".equals(activeProfile)) {
-            http.cors();
-        }
+        http.cors();
 
         http.csrf()
             .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse());
@@ -63,7 +61,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
     @Bean
-    @ConditionalOnProperty(name="spring.profiles.active", havingValue="test")
     CorsConfigurationSource corsConfigurationSource() {
         final CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(ImmutableList.of("http://localhost:3000", "https://refile.email"));
