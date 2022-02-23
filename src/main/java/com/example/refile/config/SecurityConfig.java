@@ -50,12 +50,17 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
         http.cors();
 
-        CookieCsrfTokenRepository csrfTokenRepository = CookieCsrfTokenRepository.withHttpOnlyFalse();
-        if ("prod".equals(activeProfile)) {
-            csrfTokenRepository.setCookieDomain(".refile.email");
+        // only send csrf token if environment is prod or dev
+        if ("test".equals(activeProfile)) {
+            http.csrf().disable();
+        } else {
+            CookieCsrfTokenRepository csrfTokenRepository = CookieCsrfTokenRepository.withHttpOnlyFalse();
+            if ("prod".equals(activeProfile)) {
+                csrfTokenRepository.setCookieDomain(".refile.email");
+            }
+            http.csrf()
+                .csrfTokenRepository(csrfTokenRepository);
         }
-        http.csrf()
-            .csrfTokenRepository(csrfTokenRepository);
 
         // https config (https://devcenter.heroku.com/articles/preparing-a-spring-boot-app-for-production-on-heroku)
         http.requiresChannel()
