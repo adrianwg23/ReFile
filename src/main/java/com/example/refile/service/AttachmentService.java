@@ -5,17 +5,19 @@ import com.example.refile.repository.AttachmentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class AttachmentService {
 
     private final AttachmentRepository attachmentRepository;
 
-    public Attachment saveAttachment(Attachment attachment) {
-        return attachmentRepository.save(attachment);
+    public List<Attachment> saveAllAttachments(List<Attachment> attachments) {
+        return attachmentRepository.saveAll(attachments);
     }
 
-    public void deleteAttachment(Attachment attachment) {
-        attachmentRepository.deleteById(attachment.getAttachmentId());
+    public void deleteAllAttachments() {
+        attachmentRepository.deleteAll();
     }
 }

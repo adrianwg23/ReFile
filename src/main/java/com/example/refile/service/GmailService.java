@@ -54,7 +54,7 @@ public class GmailService {
 
     public List<Attachment> syncAttachments(User user, boolean refresh) throws IOException {
         if (refresh) {
-            user.getAttachments().forEach(attachmentService::deleteAttachment);
+            attachmentService.deleteAllAttachments();
             user.getAttachments().clear();
         }
         List<Attachment> attachments = new ArrayList<>();
@@ -87,10 +87,9 @@ public class GmailService {
             System.out.println(attachmentId);
             attachment.setGId(attachmentId);
             attachments.add(attachment);
-            attachmentService.saveAttachment(attachment);
         }
 
-        return attachments;
+        return attachmentService.saveAllAttachments(attachments);
     }
 
     private void extractMessageMetadata(Attachment attachment, Message message) {
