@@ -36,18 +36,4 @@ public class RefileController {
         User user = userService.getUser(userId);
         return ResponseEntity.ok(gmailService.syncAttachments(user, true));
     }
-
-    @GetMapping("/categories/{userId}")
-    public ResponseEntity<?> getCategories(@PathVariable Long userId) {
-        User user = userService.getUser(userId);
-        return ResponseEntity.ok(user.getCategories());
-    }
-
-    @PostMapping("/categories/{userId}")
-    public ResponseEntity<?> addCategory(@PathVariable Long userId, @RequestBody CategoryDTO categoryDTO) {
-        User user = userService.getUser(userId);
-        user.getCategories().add(categoryDTO.getCategory());
-        userService.saveUser(user);
-        return ResponseEntity.ok(user.getCategories());
-    }
 }

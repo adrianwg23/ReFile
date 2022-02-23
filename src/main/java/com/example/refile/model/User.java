@@ -32,6 +32,7 @@ public class User {
     )
     private List<Attachment> attachments = new ArrayList<>();
 
+    @JsonIgnore
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "created_date", updatable = false)
@@ -41,6 +42,7 @@ public class User {
 
     private String name;
 
+    @JsonIgnore
     @Column(name = "refresh_token", length = 500)
     private String refreshToken;
 
