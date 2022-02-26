@@ -34,6 +34,6 @@ public class RefileController {
     @GetMapping("/sync-attachments/{userId}")
     public ResponseEntity<List<Attachment>> syncAttachments(@PathVariable Long userId) throws IOException {
         User user = userService.getUser(userId);
-        return ResponseEntity.ok(gmailService.syncAttachments(user, true));
+        return ResponseEntity.ok(gmailService.syncAttachments(user));
     }
 }

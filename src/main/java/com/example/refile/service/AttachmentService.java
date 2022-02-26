@@ -17,7 +17,7 @@ public class AttachmentService {
         return attachmentRepository.saveAll(attachments);
     }
 
-    public void deleteAllAttachments() {
-        attachmentRepository.deleteAll();
+    public void deleteAllAttachments(List<Attachment> attachments) {
+        attachmentRepository.deleteAll(attachments);
     }
 }

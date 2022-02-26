@@ -30,6 +30,7 @@ public class User {
             cascade = CascadeType.ALL,
             orphanRemoval = true
     )
+    @OrderBy("createdDate desc")
     private List<Attachment> attachments = new ArrayList<>();
 
     @JsonIgnore

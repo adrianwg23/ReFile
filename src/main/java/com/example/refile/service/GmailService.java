@@ -12,15 +12,16 @@ import com.google.api.services.gmail.model.MessagePart;
 import com.google.api.services.gmail.model.MessagePartBody;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.codec.binary.Base64;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.sql.Date;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 
 import static com.example.refile.util.Constants.APPLICATION_NAME;
 
@@ -35,6 +36,12 @@ public class GmailService {
     private final CredentialService credentialService;
     private final AttachmentService attachmentService;
 
+    @Qualifier("ioExecutor")
+    private final ExecutorService ioExecutor;
+
+    @Qualifier("cpuExecutor")
+    private final ExecutorService cpuExecutor;
+
     /**
      * Retrieves attachments for a given user from the database. If attachments are empty, a sync will be be made to
      * fetch attachments from Gmail.
@@ -46,78 +53,109 @@ public class GmailService {
         List<Attachment> attachments = user.getAttachments();
 
         if (attachments.isEmpty()) {
-            syncAttachments(user, false);
+            return syncAttachments(user);
         }
-        return user.getAttachments();
+        return attachments;
     }
 
-    public List<Attachment> syncAttachments(User user, boolean refresh) throws IOException {
-        if (refresh) {
-            attachmentService.deleteAllAttachments();
-            user.getAttachments().clear();
-        }
-        List<Attachment> attachments = new ArrayList<>();
+    public List<Attachment> syncAttachments(User user) throws IOException {
+        attachmentService.deleteAllAttachments(user.getAttachments());
+        user.getAttachments().clear();
+
         Gmail gmail = getGmailClient(user.getUserId());
 
-        List<Message> messageList = getMessagesWithAttachments(gmail);
+        List<Message> messageIds = getMessageIdsWithAttachments(gmail);
+        List<Attachment> attachments = Collections.synchronizedList(new ArrayList<>());
+        List<CompletableFuture<Void>> futures = new ArrayList<>();
 
-        // TODO: make each execute async
-        for (Message message : messageList) {
-            Attachment attachment = new Attachment();
-            attachment.setUser(user);
+        for (Message message : messageIds) {
+            futures.add(CompletableFuture.supplyAsync(() -> getFullMessage(message, gmail), ioExecutor)
+                                         .thenApplyAsync(fullMessage -> processMessage(fullMessage, user), cpuExecutor)
+                                         .thenAccept(attachments::addAll));
+        }
 
-            extractMessageMetadata(attachment, message);
+        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
 
-            List<MessagePart> parts = message.getPayload().getParts();
+        attachmentService.saveAllAttachments(attachments);
+        attachments.sort(Comparator.comparing(Attachment::getCreatedDate, Comparator.reverseOrder()));
+        return attachments;
+    }
 
-            // email body
-            extractEmailBody(attachment, parts.get(0));
+    private List<Attachment> processMessage(Message message, User user) {
+        List<Attachment> attachments = new ArrayList<>();
 
-            // attachment data
-            MessagePart attachmentPart = parts.get(1);
+        // header data
+        String[] headers = extractMessageMetadata(message);
+        String sender = headers[0];
+        String subject = headers[1];
+        List<String> subjectCategoryExtraction = categorizationService.extractCategories(subject, user.getCategories());
+
+        // email body data
+        List<MessagePart> parts = message.getPayload().getParts();
+        String body = extractEmailBody(parts.get(0));
+        List<String> bodyCategoryExtraction = new ArrayList<>();
+        if (!body.isEmpty()) {
+            bodyCategoryExtraction.addAll(categorizationService.extractCategories(body, user.getCategories()));
+        }
+
+        // attachment data
+        for (int i = 1; i < parts.size(); i++) {
+            MessagePart attachmentPart = parts.get(i);
             String fileName = attachmentPart.getFilename();
             String extension = fileName.substring(fileName.indexOf(".") + 1);
-            attachment.setName(fileName);
-            attachment.setExtension(extension);
-
             String attachmentId = attachmentPart.getBody().getAttachmentId();
+
+            Attachment attachment = Attachment.builder()
+                                              .user(user)
+                                              .createdDate(Date.from(Instant.ofEpochMilli(message.getInternalDate())))
+                                              .name(fileName)
+                                              .sender(sender)
+                                              .subject(subject)
+                                              .extension(extension)
+                                              .gId(attachmentId)
+                                              .labelIds(new HashSet<>(message.getLabelIds()))
+                                              .categories(new HashSet<>())
+                                              .build();
+
+            attachment.getCategories().addAll(subjectCategoryExtraction);
+            attachment.getCategories().addAll(bodyCategoryExtraction);
+
 //            MessagePartBody attachmentPartBody = getAttachmentPartBody(message.getId(), attachmentId, gmail);
 
-            System.out.println(attachmentId);
-            attachment.setGId(attachmentId);
             attachments.add(attachment);
         }
 
-        return attachmentService.saveAllAttachments(attachments);
+        return attachments;
     }
 
-    private void extractMessageMetadata(Attachment attachment, Message message) {
-        attachment.setLabelIds(new HashSet<>(message.getLabelIds()));
-        attachment.setCreatedDate(Date.from(Instant.ofEpochMilli(message.getInternalDate())));
+    private String[] extractMessageMetadata(Message message) {
+        String[] headers = new String[2];
 
         message.getPayload().getHeaders().forEach(header -> {
             String name = header.getName();
             if ("From".equals(name)) {
-                attachment.setSender(header.getValue());
+                headers[0] = header.getValue();
             } else if ("Subject".equals(name)) {
-                attachment.setSubject(header.getValue());
-                List<String> categories = categorizationService.extractCategories(header.getValue(),
-                        attachment.getUser().getCategories());
-                attachment.getCategories().addAll(categories);
+                headers[1] = header.getValue();
             }
         });
+
+        return headers;
     }
 
-    private void extractEmailBody(Attachment attachment, MessagePart messagePart) {
+    private String extractEmailBody(MessagePart messagePart) {
         MessagePart currPart = messagePart;
-        while (currPart.getBody().getData() == null) {
-            currPart = currPart.getParts().get(0);
+        if (currPart.getParts() != null) {
+            while (currPart.getBody().getData() == null) {
+                currPart = currPart.getParts().get(0);
+            }
         }
 
-        String emailBody = new String(Base64.decodeBase64(currPart.getBody().getData()),
-                StandardCharsets.UTF_8);
-        List<String> categories = categorizationService.extractCategories(emailBody, attachment.getUser().getCategories());
-        attachment.getCategories().addAll(categories);
+        if (currPart.getBody().getData() != null) {
+            return new String(Base64.decodeBase64(currPart.getBody().getData()),
+                    StandardCharsets.UTF_8);
+        }
+        return "";
     }
 
     private MessagePartBody getAttachmentPartBody(String messageId, String attachmentId, Gmail gmail) throws IOException {
@@ -127,7 +165,7 @@ public class GmailService {
                     .get(USER_ID, messageId, attachmentId).execute();
     }
 
-    private List<Message> getMessagesWithAttachments(Gmail gmail) throws IOException {
+    private List<Message> getMessageIdsWithAttachments(Gmail gmail) throws IOException {
         Gmail.Users.Messages.List request = gmail.users().messages().list(USER_ID).setQ("has:attachment");
 
         ListMessagesResponse response = request.execute();
@@ -143,14 +181,19 @@ public class GmailService {
             messageIdList.addAll(response.getMessages());
         }
 
-        // TODO: make each execute async
-        List<Message> messageList = new ArrayList<>();
-        for (Message messageId : messageIdList) {
-            Message message = gmail.users().messages().get(USER_ID, messageId.getId()).execute();
-            messageList.add(message);
-        }
+        return messageIdList;
+    }
 
-        return messageList;
+    private Message getFullMessage(Message message, Gmail gmail) {
+        int count = 0;
+        int maxTries = 3;
+        while (true) {
+            try {
+                return gmail.users().messages().get(USER_ID, message.getId()).execute();
+            } catch (Exception e) {
+                if (++count == maxTries) throw new RuntimeException(e.getMessage());
+            }
+        }
     }
 
     /**
