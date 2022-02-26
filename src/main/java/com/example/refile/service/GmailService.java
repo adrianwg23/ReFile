@@ -83,19 +83,24 @@ public class GmailService {
 
     private List<Attachment> processMessage(Message message, User user) {
         List<Attachment> attachments = new ArrayList<>();
+        Set<String> seenCategories = new HashSet<>();
 
         // header data
         String[] headers = extractMessageMetadata(message);
         String sender = headers[0];
         String subject = headers[1];
-        List<String> subjectCategoryExtraction = categorizationService.extractCategories(subject, user.getCategories());
+        List<String> subjectCategoryExtraction = categorizationService.extractCategories(subject, user.getCategories(),
+                seenCategories);
+        seenCategories.addAll(subjectCategoryExtraction);
 
         // email body data
         List<MessagePart> parts = message.getPayload().getParts();
         String body = extractEmailBody(parts.get(0));
         List<String> bodyCategoryExtraction = new ArrayList<>();
         if (!body.isEmpty()) {
-            bodyCategoryExtraction.addAll(categorizationService.extractCategories(body, user.getCategories()));
+            bodyCategoryExtraction.addAll(categorizationService.extractCategories(body, user.getCategories(),
+                    seenCategories));
+            seenCategories.addAll(bodyCategoryExtraction);
         }
 
         // attachment data
@@ -117,8 +122,14 @@ public class GmailService {
                                               .categories(new HashSet<>())
                                               .build();
 
+            List<String> fileNameCategoryExtraction = new ArrayList<>();
+            if (!fileName.isEmpty()) {
+                fileNameCategoryExtraction.addAll(categorizationService.extractCategories(fileName, user.getCategories(),
+                        seenCategories));
+            }
             attachment.getCategories().addAll(subjectCategoryExtraction);
             attachment.getCategories().addAll(bodyCategoryExtraction);
+            attachment.getCategories().addAll(fileNameCategoryExtraction);
 
 //            MessagePartBody attachmentPartBody = getAttachmentPartBody(message.getId(), attachmentId, gmail);
 
