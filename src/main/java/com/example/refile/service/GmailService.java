@@ -95,6 +95,9 @@ public class GmailService {
 
         // email body data
         List<MessagePart> parts = message.getPayload().getParts();
+        if (parts == null) {
+            return new ArrayList<>();
+        }
         String body = extractEmailBody(parts.get(0));
         List<String> bodyCategoryExtraction = new ArrayList<>();
         if (!body.isEmpty()) {
