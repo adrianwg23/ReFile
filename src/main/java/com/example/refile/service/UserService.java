@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 @AllArgsConstructor
@@ -35,6 +36,11 @@ public class UserService {
 
     public void setRefreshToken(User user, String refreshToken) {
         user.setRefreshToken(refreshToken);
+        userRepository.save(user);
+    }
+
+    public void setCategories(User user, Set<String> categories) {
+        user.setCategories(categories);
         userRepository.save(user);
     }
 }
