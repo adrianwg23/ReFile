@@ -12,6 +12,9 @@ import java.util.Set;
 public class CategorizationService {
 
     public List<String> extractCategories(String text, Set<String> categories, Set<String> seenCategories) {
+        if (text == null) {
+            return new ArrayList<>();
+        }
         String lowerCaseText = text.toLowerCase();
         List<String> containedCategories = new ArrayList<>();
 
