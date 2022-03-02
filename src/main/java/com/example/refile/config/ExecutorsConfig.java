@@ -11,7 +11,7 @@ public class ExecutorsConfig {
 
     @Bean("ioExecutor")
     public ExecutorService ioExecutor() {
-        return Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+        return Executors.newSingleThreadExecutor();
     }
 
     @Bean("cpuExecutor")
