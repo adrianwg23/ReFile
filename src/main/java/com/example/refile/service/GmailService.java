@@ -103,7 +103,8 @@ public class GmailService {
         for (int i = 1; i < parts.size(); i++) {
             MessagePart attachmentPart = parts.get(i);
             String fileName = attachmentPart.getFilename();
-            if (fileName.equals("invite.ics")) {
+            String extension = fileName.substring(fileName.indexOf(".") + 1);
+            if (extension.equals("ics")) {
                 return Optional.empty();
             }
             if (sender == null && subject == null) {
