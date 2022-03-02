@@ -10,6 +10,7 @@ import com.google.api.services.gmail.model.ListMessagesResponse;
 import com.google.api.services.gmail.model.Message;
 import com.google.api.services.gmail.model.MessagePart;
 import com.google.api.services.gmail.model.MessagePartBody;
+import com.google.common.collect.Sets;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -65,12 +66,14 @@ public class GmailService {
         Gmail gmail = getGmailClient(user.getUserId());
 
         List<Message> messageIds = getMessageIdsWithAttachments(gmail);
+        Collections.reverse(messageIds);
         List<Attachment> attachments = Collections.synchronizedList(new ArrayList<>());
+        Set<String> seenThreads = Sets.newConcurrentHashSet();
         List<CompletableFuture<Void>> futures = new ArrayList<>();
 
         for (Message message : messageIds) {
             futures.add(CompletableFuture.supplyAsync(() -> getFullMessage(message, gmail), ioExecutor)
-                                         .thenApplyAsync(fullMessage -> processMessage(fullMessage, user), cpuExecutor)
+                                         .thenApplyAsync(fullMessage -> processMessage(fullMessage, user, seenThreads), cpuExecutor)
                                          .thenAccept(a -> a.ifPresent(attachments::addAll)));
         }
 
@@ -81,7 +84,14 @@ public class GmailService {
         return attachments;
     }
 
-    private Optional<List<Attachment>> processMessage(Message message, User user) {
+    private Optional<List<Attachment>> processMessage(Message message, User user, Set<String> seenThreads) {
+        String threadId = extractThreadId(message);
+        if (seenThreads.contains(threadId)) {
+            return Optional.empty();
+        } else {
+            seenThreads.add(threadId);
+        }
+
         List<Attachment> attachments = new ArrayList<>();
         Set<String> seenCategories = new HashSet<>();
 
@@ -108,7 +118,7 @@ public class GmailService {
                 return Optional.empty();
             }
             if (sender == null && subject == null) {
-                String[] headers = extractMessageMetadata(message);
+                String[] headers = extractMessageHeaders(message);
                 sender = headers[0];
                 subject = headers[1];
                 subjectCategoryExtraction.addAll(categorizationService.extractCategories(subject, user.getCategories(),
@@ -155,7 +165,11 @@ public class GmailService {
         return Optional.of(attachments);
     }
 
-    private String[] extractMessageMetadata(Message message) {
+    private String extractThreadId(Message message) {
+        return message.getThreadId();
+    }
+
+    private String[] extractMessageHeaders(Message message) {
         String[] headers = new String[2];
 
         message.getPayload().getHeaders().forEach(header -> {
