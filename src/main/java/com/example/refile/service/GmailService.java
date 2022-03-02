@@ -13,6 +13,8 @@ import com.google.api.services.gmail.model.MessagePartBody;
 import com.google.common.collect.Sets;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.codec.binary.Base64;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
@@ -32,6 +34,8 @@ public class GmailService {
 
     // default user id for authenticated users querying gmail
     private static final String USER_ID = "me";
+
+    private static final Logger logger = LoggerFactory.getLogger(GmailService.class);
 
     private final CategorizationService categorizationService;
     private final CredentialService credentialService;
@@ -60,17 +64,20 @@ public class GmailService {
     }
 
     public List<Attachment> syncAttachments(User user) throws IOException {
+        long startTime = System.currentTimeMillis();
         attachmentService.deleteAllAttachments(user.getAttachments());
         user.getAttachments().clear();
 
         Gmail gmail = getGmailClient(user.getUserId());
 
+        logger.info("getting message ids with attachments");
         List<Message> messageIds = getMessageIdsWithAttachments(gmail);
         Collections.reverse(messageIds);
         List<Attachment> attachments = Collections.synchronizedList(new ArrayList<>());
         Set<String> seenThreads = Sets.newConcurrentHashSet();
         List<CompletableFuture<Void>> futures = new ArrayList<>();
 
+        logger.info("processing messages");
         for (Message message : messageIds) {
             futures.add(CompletableFuture.supplyAsync(() -> getFullMessage(message, gmail), ioExecutor)
                                          .thenApplyAsync(fullMessage -> processMessage(fullMessage, user, seenThreads), cpuExecutor)
@@ -81,6 +88,10 @@ public class GmailService {
 
         attachmentService.saveAllAttachments(attachments);
         attachments.sort(Comparator.comparing(Attachment::getCreatedDate, Comparator.reverseOrder()));
+
+        long endTime = System.currentTimeMillis();
+        logger.info("That took " + (endTime - startTime) / 1000.0 + " seconds");
+
         return attachments;
     }
 
