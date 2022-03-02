@@ -123,7 +123,6 @@ public class GmailService {
                 }
             }
 
-            String extension = fileName.substring(fileName.indexOf(".") + 1);
             String attachmentId = attachmentPart.getBody().getAttachmentId();
 
             Attachment attachment = Attachment.builder()
@@ -163,7 +162,12 @@ public class GmailService {
             if ("From".equals(name)) {
                 headers[0] = header.getValue();
             } else if ("Subject".equals(name)) {
-                headers[1] = header.getValue();
+                String subject = header.getValue();
+                if (subject.substring(0, 3).toLowerCase().equals("re:")) {
+                    headers[1] = subject.substring(4);
+                } else {
+                    headers[1] = subject;
+                }
             }
         });
 
