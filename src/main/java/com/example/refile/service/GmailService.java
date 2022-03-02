@@ -102,8 +102,8 @@ public class GmailService {
 
         // header data
         String sender = null;
-        String subject = null;
-        List<String> subjectCategoryExtraction = new ArrayList<>();
+        String thread = null;
+        List<String> threadCategoryExtraction = new ArrayList<>();
 
         // email body data
         String body = null;
@@ -117,13 +117,13 @@ public class GmailService {
             if (extension.equals("ics")) {
                 return Optional.empty();
             }
-            if (sender == null && subject == null) {
+            if (sender == null && thread == null) {
                 String[] headers = extractMessageHeaders(message);
                 sender = headers[0];
-                subject = headers[1];
-                subjectCategoryExtraction.addAll(categorizationService.extractCategories(subject, user.getCategories(),
+                thread = headers[1];
+                threadCategoryExtraction.addAll(categorizationService.extractCategories(thread, user.getCategories(),
                         seenCategories));
-                seenCategories.addAll(subjectCategoryExtraction);
+                seenCategories.addAll(threadCategoryExtraction);
             }
             if (body == null) {
                 body = extractEmailBody(parts.get(0));
@@ -141,7 +141,7 @@ public class GmailService {
                                               .createdDate(Date.from(Instant.ofEpochMilli(message.getInternalDate())))
                                               .name(fileName)
                                               .sender(sender)
-                                              .subject(subject)
+                                              .thread(thread)
                                               .extension(extension)
                                               .gId(attachmentId)
                                               .labelIds(new HashSet<>(message.getLabelIds()))
@@ -153,7 +153,7 @@ public class GmailService {
                 fileNameCategoryExtraction.addAll(categorizationService.extractCategories(fileName, user.getCategories(),
                         seenCategories));
             }
-            attachment.getCategories().addAll(subjectCategoryExtraction);
+            attachment.getCategories().addAll(threadCategoryExtraction);
             attachment.getCategories().addAll(bodyCategoryExtraction);
             attachment.getCategories().addAll(fileNameCategoryExtraction);
 
@@ -177,11 +177,11 @@ public class GmailService {
             if ("From".equals(name)) {
                 headers[0] = header.getValue();
             } else if ("Subject".equals(name)) {
-                String subject = header.getValue();
-                if (subject.substring(0, 3).toLowerCase().equals("re:")) {
-                    headers[1] = subject.substring(4);
+                String thread = header.getValue();
+                if (thread.substring(0, 3).toLowerCase().equals("re:")) {
+                    headers[1] = thread.substring(4);
                 } else {
-                    headers[1] = subject;
+                    headers[1] = thread;
                 }
             }
         });
