@@ -85,31 +85,44 @@ public class GmailService {
         List<Attachment> attachments = new ArrayList<>();
         Set<String> seenCategories = new HashSet<>();
 
-        // header data
-        String[] headers = extractMessageMetadata(message);
-        String sender = headers[0];
-        String subject = headers[1];
-        List<String> subjectCategoryExtraction = categorizationService.extractCategories(subject, user.getCategories(),
-                seenCategories);
-        seenCategories.addAll(subjectCategoryExtraction);
-
-        // email body data
         List<MessagePart> parts = message.getPayload().getParts();
         if (parts == null) {
             return new ArrayList<>();
         }
-        String body = extractEmailBody(parts.get(0));
+
+        // header data
+        String sender = null;
+        String subject = null;
+        List<String> subjectCategoryExtraction = new ArrayList<>();
+
+        // email body data
+        String body = null;
         List<String> bodyCategoryExtraction = new ArrayList<>();
-        if (!body.isEmpty()) {
-            bodyCategoryExtraction.addAll(categorizationService.extractCategories(body, user.getCategories(),
-                    seenCategories));
-            seenCategories.addAll(bodyCategoryExtraction);
-        }
 
         // attachment data
         for (int i = 1; i < parts.size(); i++) {
             MessagePart attachmentPart = parts.get(i);
             String fileName = attachmentPart.getFilename();
+            if (fileName.equals("invite.ics")) {
+                return new ArrayList<>();
+            }
+            if (sender == null && subject == null) {
+                String[] headers = extractMessageMetadata(message);
+                sender = headers[0];
+                subject = headers[1];
+                subjectCategoryExtraction.addAll(categorizationService.extractCategories(subject, user.getCategories(),
+                        seenCategories));
+                seenCategories.addAll(subjectCategoryExtraction);
+            }
+            if (body == null) {
+                body = extractEmailBody(parts.get(0));
+                if (!body.isEmpty()) {
+                    bodyCategoryExtraction.addAll(categorizationService.extractCategories(body, user.getCategories(),
+                            seenCategories));
+                    seenCategories.addAll(bodyCategoryExtraction);
+                }
+            }
+
             String extension = fileName.substring(fileName.indexOf(".") + 1);
             String attachmentId = attachmentPart.getBody().getAttachmentId();
 
