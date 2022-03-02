@@ -1,12 +1,11 @@
 package com.example.refile.web;
 
-import com.example.refile.model.Attachment;
 import com.example.refile.dto.CategoryDTO;
+import com.example.refile.model.Attachment;
 import com.example.refile.model.User;
 import com.example.refile.service.AttachmentService;
 import com.example.refile.service.GmailService;
 import com.example.refile.service.UserService;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
