@@ -48,5 +48,5 @@ public class Attachment {
     private String name;
     private String extension;
     private String sender;
-    private String subject;
+    private String thread;
 }

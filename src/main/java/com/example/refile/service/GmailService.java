@@ -147,7 +147,7 @@ public class GmailService {
                                               .createdDate(Date.from(Instant.ofEpochMilli(message.getInternalDate())))
                                               .name(fileName)
                                               .sender(sender)
-                                              .subject(thread)
+                                              .thread(thread)
                                               .extension(extension)
                                               .gId(attachmentId)
                                               .labelIds(new HashSet<>(message.getLabelIds()))
