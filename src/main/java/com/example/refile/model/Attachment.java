@@ -1,6 +1,7 @@
 package com.example.refile.model;
 
 import com.example.refile.util.StringSetConverter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -40,6 +41,7 @@ public class Attachment {
     @Column(name = "categories")
     private Set<String> categories = new HashSet<>();
 
+    @JsonIgnore
     @Column(name = "g_id", length = 1000)
     private String gId;
 

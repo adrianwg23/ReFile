@@ -16,3 +16,6 @@ spring:
               - "https://www.googleapis.com/auth/userinfo.profile"
               - "https://www.googleapis.com/auth/gmail.readonly"
             access-type: "offline"
+
+app:
+  api-key: ${API_KEY}

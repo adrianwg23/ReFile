@@ -4,6 +4,7 @@ import com.example.refile.model.Attachment;
 import com.example.refile.model.User;
 import com.example.refile.repository.AttachmentRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -24,5 +25,9 @@ public class AttachmentService {
 
     public List<Attachment> getAttachmentsByUser(User user) {
         return attachmentRepository.findAllByUserOrderByCreatedDateDesc(user);
+    }
+
+    public List<Attachment> getAllAttachments() {
+        return attachmentRepository.findAll();
     }
 }
