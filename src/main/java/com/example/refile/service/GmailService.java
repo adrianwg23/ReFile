@@ -71,7 +71,7 @@ public class GmailService {
         for (Message message : messageIds) {
             futures.add(CompletableFuture.supplyAsync(() -> getFullMessage(message, gmail), ioExecutor)
                                          .thenApplyAsync(fullMessage -> processMessage(fullMessage, user), cpuExecutor)
-                                         .thenAccept(attachments::addAll));
+                                         .thenAccept(a -> a.ifPresent(attachments::addAll)));
         }
 
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
@@ -81,13 +81,13 @@ public class GmailService {
         return attachments;
     }
 
-    private List<Attachment> processMessage(Message message, User user) {
+    private Optional<List<Attachment>> processMessage(Message message, User user) {
         List<Attachment> attachments = new ArrayList<>();
         Set<String> seenCategories = new HashSet<>();
 
         List<MessagePart> parts = message.getPayload().getParts();
         if (parts == null) {
-            return new ArrayList<>();
+            return Optional.empty();
         }
 
         // header data
@@ -104,7 +104,7 @@ public class GmailService {
             MessagePart attachmentPart = parts.get(i);
             String fileName = attachmentPart.getFilename();
             if (fileName.equals("invite.ics")) {
-                return new ArrayList<>();
+                return Optional.empty();
             }
             if (sender == null && subject == null) {
                 String[] headers = extractMessageMetadata(message);
@@ -152,7 +152,7 @@ public class GmailService {
             attachments.add(attachment);
         }
 
-        return attachments;
+        return Optional.of(attachments);
     }
 
     private String[] extractMessageMetadata(Message message) {
