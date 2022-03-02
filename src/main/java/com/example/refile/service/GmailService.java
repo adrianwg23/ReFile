@@ -189,7 +189,7 @@ public class GmailService {
                 headers[0] = header.getValue();
             } else if ("Subject".equals(name)) {
                 String thread = header.getValue();
-                if (thread.substring(0, 3).toLowerCase().equals("re:")) {
+                if (thread.length() > 3 && thread.substring(0, 3).toLowerCase().equals("re:")) {
                     headers[1] = thread.substring(4);
                 } else {
                     headers[1] = thread;
