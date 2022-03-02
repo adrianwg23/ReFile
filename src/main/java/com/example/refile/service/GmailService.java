@@ -73,7 +73,6 @@ public class GmailService {
         logger.info("getting message ids with attachments");
         List<Message> messageIds = getMessageIdsWithAttachments(gmail);
         Collections.reverse(messageIds);
-        List<Attachment> attachments = Collections.synchronizedList(new ArrayList<>());
         Set<String> seenThreads = Sets.newConcurrentHashSet();
         List<CompletableFuture<Void>> futures = new ArrayList<>();
 
@@ -81,18 +80,14 @@ public class GmailService {
         for (Message message : messageIds) {
             futures.add(CompletableFuture.supplyAsync(() -> getFullMessage(message, gmail), ioExecutor)
                                          .thenApplyAsync(fullMessage -> processMessage(fullMessage, user, seenThreads), cpuExecutor)
-                                         .thenAccept(a -> a.ifPresent(attachments::addAll)));
+                                         .thenAccept(a -> a.ifPresent(attachmentService::saveAllAttachments)));
         }
 
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
 
-        attachmentService.saveAllAttachments(attachments);
-        attachments.sort(Comparator.comparing(Attachment::getCreatedDate, Comparator.reverseOrder()));
-
         long endTime = System.currentTimeMillis();
         logger.info("That took " + (endTime - startTime) / 1000.0 + " seconds");
-
-        return attachments;
+        return attachmentService.getAttachmentsByUser(user);
     }
 
     private Optional<List<Attachment>> processMessage(Message message, User user, Set<String> seenThreads) {

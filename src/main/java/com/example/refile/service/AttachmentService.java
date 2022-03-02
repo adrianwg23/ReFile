@@ -1,6 +1,7 @@
 package com.example.refile.service;
 
 import com.example.refile.model.Attachment;
+import com.example.refile.model.User;
 import com.example.refile.repository.AttachmentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -18,6 +19,10 @@ public class AttachmentService {
     }
 
     public void deleteAllAttachments(List<Attachment> attachments) {
-        attachmentRepository.deleteAll(attachments);
+        attachmentRepository.deleteAllInBatch(attachments);
+    }
+
+    public List<Attachment> getAttachmentsByUser(User user) {
+        return attachmentRepository.findAllByUserOrderByCreatedDateDesc(user);
     }
 }
