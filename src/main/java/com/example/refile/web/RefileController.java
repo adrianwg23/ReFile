@@ -1,7 +1,7 @@
 package com.example.refile.web;
 
 import com.example.refile.model.Attachment;
-import com.example.refile.model.CategoryDTO;
+import com.example.refile.dto.CategoryDTO;
 import com.example.refile.model.User;
 import com.example.refile.service.GmailService;
 import com.example.refile.service.UserService;
@@ -29,7 +29,7 @@ public class RefileController {
     @PatchMapping("/users/{userId}")
     public ResponseEntity<User> updateCategories(@PathVariable Long userId, @RequestBody CategoryDTO categoryDTO) {
         User user = userService.getUser(userId);
-        userService.setCategories(user, new HashSet<>(categoryDTO.getCategory()));
+        userService.setCategories(user, new HashSet<>(categoryDTO.getCategories()));
         return ResponseEntity.ok(user);
     }
 

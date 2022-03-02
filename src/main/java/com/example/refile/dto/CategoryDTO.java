@@ -1,4 +1,4 @@
-package com.example.refile.model;
+package com.example.refile.dto;
 
 import lombok.Data;
 
@@ -7,6 +7,6 @@ import java.util.List;
 @Data
 public class CategoryDTO {
 
-    private List<String> category;
+    private List<String> categories;
 
 }
