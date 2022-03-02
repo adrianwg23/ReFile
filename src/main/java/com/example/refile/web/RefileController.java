@@ -10,6 +10,7 @@ import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -53,10 +54,16 @@ public class RefileController {
         return ResponseEntity.ok(gmailService.syncAttachments(user));
     }
 
-    @GetMapping("/data/attachments")
+    @GetMapping(value = "/gid/{attachmentId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> gid(@PathVariable Long attachmentId) {
+        String gid = attachmentService.getAttachmentById(attachmentId).getGId();
+        return ResponseEntity.ok(String.format("{\"gid\": \"%s\"}", gid));
+    }
+
+    @GetMapping(value = "/data/attachments", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> dataAttachments(@RequestHeader(value = "Authorization") String apiKey) {
         if (apiKey == null || !apiKey.substring(7).equals(this.apiKey)) {
-            return new ResponseEntity<>("Unauthorized", HttpStatus.UNAUTHORIZED);
+            return new ResponseEntity<>("{\"error\": \"Unauthorized\"}", HttpStatus.UNAUTHORIZED);
         }
 
         return ResponseEntity.ok(attachmentService.getAllAttachments());
