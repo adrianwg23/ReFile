@@ -47,6 +47,11 @@ public class Attachment {
 
     private String name;
     private String extension;
+    private String receiver;
     private String sender;
+    private String senderEmail;
     private String thread;
+    private String subject;
+    private String cc;
+    private String snippet;
 }

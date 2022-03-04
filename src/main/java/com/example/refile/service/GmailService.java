@@ -25,6 +25,8 @@ import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static com.example.refile.util.Constants.APPLICATION_NAME;
 
@@ -97,6 +99,7 @@ public class GmailService {
         } else {
             seenThreads.add(threadId);
         }
+        String snippet = extractSnippet(message);
 
         List<Attachment> attachments = new ArrayList<>();
         Set<String> seenCategories = new HashSet<>();
@@ -108,7 +111,12 @@ public class GmailService {
 
         // header data
         String sender = null;
+        String senderEmail = null;
+        String receiver = null;
+        String subject = null;
         String thread = null;
+        String cc = null;
+        boolean headerProcessed = false;
         List<String> threadCategoryExtraction = new ArrayList<>();
 
         // email body data
@@ -119,17 +127,22 @@ public class GmailService {
         for (int i = 1; i < parts.size(); i++) {
             MessagePart attachmentPart = parts.get(i);
             String fileName = attachmentPart.getFilename();
-            String extension = fileName.substring(fileName.indexOf(".") + 1);
+            String extension = fileName.substring(fileName.lastIndexOf(".") + 1);
             if (extension.equals("ics")) {
                 return Optional.empty();
             }
-            if (sender == null && thread == null) {
+            if (!headerProcessed) {
                 String[] headers = extractMessageHeaders(message);
                 sender = headers[0];
-                thread = headers[1];
+                senderEmail = extractSenderEmail(sender);
+                subject = headers[1];
+                thread = headers[2];
+                cc = headers[3];
+                receiver = headers[4];
                 threadCategoryExtraction.addAll(categorizationService.extractCategories(thread, user.getCategories(),
                         seenCategories));
                 seenCategories.addAll(threadCategoryExtraction);
+                headerProcessed = true;
             }
             if (body == null) {
                 body = extractEmailBody(parts.get(0));
@@ -147,7 +160,12 @@ public class GmailService {
                                               .createdDate(Date.from(Instant.ofEpochMilli(message.getInternalDate())))
                                               .name(fileName)
                                               .sender(sender)
+                                              .senderEmail(senderEmail)
+                                              .receiver(receiver)
                                               .thread(thread)
+                                              .subject(subject)
+                                              .cc(cc)
+                                              .snippet(snippet)
                                               .extension(extension)
                                               .gId(attachmentId)
                                               .labelIds(new HashSet<>(message.getLabelIds()))
@@ -171,26 +189,46 @@ public class GmailService {
         return Optional.of(attachments);
     }
 
+    private String extractSnippet(Message message) {
+        return message.getSnippet();
+    }
+
     private String extractThreadId(Message message) {
         return message.getThreadId();
     }
 
+    private String extractSenderEmail(String sender) {
+        int leftAngle = sender.lastIndexOf('<');
+        int rightAngle = sender.lastIndexOf('>');
+
+        if (leftAngle != -1 && rightAngle != -1) {
+            return sender.substring(leftAngle + 1, rightAngle);
+        }
+
+        return sender;
+    }
+
     private String[] extractMessageHeaders(Message message) {
-        String[] headers = new String[2];
+        String[] headers = new String[5];
 
         message.getPayload().getHeaders().forEach(header -> {
             String name = header.getName();
             if ("From".equals(name)) {
                 headers[0] = header.getValue();
             } else if ("Subject".equals(name)) {
-                String thread = header.getValue();
-                if (thread.length() > 3 && thread.substring(0, 3).toLowerCase().equals("re:")) {
-                    headers[1] = thread.substring(4);
-                } else {
-                    headers[1] = thread;
-                }
+                headers[1] = header.getValue();
+            } else if ("Thread-Topic".equals(name)) {
+                headers[2] = header.getValue();
+            } else if ("CC".equals(name)) {
+                headers[3] = header.getValue();
+            } else if ("To".equals(name)) {
+                headers[4] = header.getValue();
             }
         });
+
+        if (headers[2] == null) {
+            headers[2] = headers[1];
+        }
 
         return headers;
     }
