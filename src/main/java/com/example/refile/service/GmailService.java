@@ -115,8 +115,9 @@ public class GmailService {
         String receiver = null;
         String subject = null;
         String thread = null;
-        String cc = null;
-        Set<String> ccSet = null;
+        String cc;
+        Set<String> ccSet = new HashSet<>();
+        String importance = null;
         boolean headerProcessed = false;
         List<String> threadCategoryExtraction = new ArrayList<>();
 
@@ -141,6 +142,7 @@ public class GmailService {
                 cc = headers[3];
                 ccSet = extractCCEmails(cc);
                 receiver = headers[4];
+                importance = headers[5];
                 threadCategoryExtraction.addAll(categorizationService.extractCategories(thread, user.getCategories(),
                         seenCategories));
                 seenCategories.addAll(threadCategoryExtraction);
@@ -168,6 +170,7 @@ public class GmailService {
                                               .subject(subject)
                                               .cc(ccSet)
                                               .snippet(snippet)
+                                              .importance(importance)
                                               .extension(extension)
                                               .gId(attachmentId)
                                               .labelIds(new HashSet<>(message.getLabelIds()))
@@ -224,7 +227,7 @@ public class GmailService {
     }
 
     private String[] extractMessageHeaders(Message message) {
-        String[] headers = new String[5];
+        String[] headers = new String[6];
 
         message.getPayload().getHeaders().forEach(header -> {
             String name = header.getName();
@@ -238,6 +241,8 @@ public class GmailService {
                 headers[3] = header.getValue();
             } else if ("To".equals(name)) {
                 headers[4] = header.getValue();
+            } else if ("Importance".equals(name)) {
+                headers[5] = header.getValue();
             }
         });
 

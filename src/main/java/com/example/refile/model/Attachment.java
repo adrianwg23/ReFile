@@ -57,4 +57,5 @@ public class Attachment {
     private String thread;
     private String subject;
     private String snippet;
+    private String importance;
 }
