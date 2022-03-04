@@ -116,6 +116,7 @@ public class GmailService {
         String subject = null;
         String thread = null;
         String cc = null;
+        Set<String> ccSet = null;
         boolean headerProcessed = false;
         List<String> threadCategoryExtraction = new ArrayList<>();
 
@@ -138,6 +139,7 @@ public class GmailService {
                 subject = headers[1];
                 thread = headers[2];
                 cc = headers[3];
+                ccSet = extractCCEmails(cc);
                 receiver = headers[4];
                 threadCategoryExtraction.addAll(categorizationService.extractCategories(thread, user.getCategories(),
                         seenCategories));
@@ -164,7 +166,7 @@ public class GmailService {
                                               .receiver(receiver)
                                               .thread(thread)
                                               .subject(subject)
-                                              .cc(cc)
+                                              .cc(ccSet)
                                               .snippet(snippet)
                                               .extension(extension)
                                               .gId(attachmentId)
@@ -197,12 +199,25 @@ public class GmailService {
         return message.getThreadId();
     }
 
-    private String extractSenderEmail(String sender) {
-        int leftAngle = sender.lastIndexOf('<');
-        int rightAngle = sender.lastIndexOf('>');
+    private Set<String> extractCCEmails(String cc) {
+        if (cc == null) {
+            return new HashSet<>();
+        }
+        Set<String> ccEmails = new HashSet<>();
+        String[] emails = cc.split(",");
+        for (String e : emails) {
+            String email = extractSenderEmail(e);
+            ccEmails.add(email);
+        }
 
-        if (leftAngle != -1 && rightAngle != -1) {
-            return sender.substring(leftAngle + 1, rightAngle);
+        return ccEmails;
+    }
+
+    private String extractSenderEmail(String sender) {
+        Pattern pattern = Pattern.compile("<(.*?)>");
+        Matcher matcher = pattern.matcher(sender);
+        if (matcher.find()) {
+            return matcher.group(1);
         }
 
         return sender;

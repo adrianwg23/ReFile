@@ -41,6 +41,10 @@ public class Attachment {
     @Column(name = "categories")
     private Set<String> categories = new HashSet<>();
 
+    @Convert(converter = StringSetConverter.class)
+    @Column(name = "cc")
+    private Set<String> cc = new HashSet<>();
+
     @JsonIgnore
     @Column(name = "g_id", length = 1000)
     private String gId;
@@ -52,6 +56,5 @@ public class Attachment {
     private String senderEmail;
     private String thread;
     private String subject;
-    private String cc;
     private String snippet;
 }
