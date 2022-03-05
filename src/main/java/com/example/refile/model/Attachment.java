@@ -45,17 +45,22 @@ public class Attachment {
     @Column(name = "cc")
     private Set<String> cc = new HashSet<>();
 
+    @Convert(converter = StringSetConverter.class)
+    @Column(name = "receiver")
+    private Set<String> receiver = new HashSet<>();
+
     @JsonIgnore
     @Column(name = "g_id", length = 1000)
     private String gId;
 
     private String name;
     private String extension;
-    private String receiver;
     private String sender;
     private String senderEmail;
     private String thread;
     private String subject;
-    private String snippet;
     private String importance;
+
+    @Column(length = 500)
+    private String snippet;
 }

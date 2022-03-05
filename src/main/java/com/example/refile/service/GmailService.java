@@ -112,11 +112,12 @@ public class GmailService {
         // header data
         String sender = null;
         String senderEmail = null;
-        String receiver = null;
         String subject = null;
         String thread = null;
         String cc;
         Set<String> ccSet = new HashSet<>();
+        String receiver;
+        Set<String> receiverSet = new HashSet<>();
         String importance = null;
         boolean headerProcessed = false;
         List<String> threadCategoryExtraction = new ArrayList<>();
@@ -136,12 +137,13 @@ public class GmailService {
             if (!headerProcessed) {
                 String[] headers = extractMessageHeaders(message);
                 sender = headers[0];
-                senderEmail = extractSenderEmail(sender);
+                senderEmail = extractEmail(sender);
                 subject = headers[1];
                 thread = headers[2];
                 cc = headers[3];
-                ccSet = extractCCEmails(cc);
+                ccSet = extractEmails(cc);
                 receiver = headers[4];
+                receiverSet = extractEmails(receiver);
                 importance = headers[5];
                 threadCategoryExtraction.addAll(categorizationService.extractCategories(thread, user.getCategories(),
                         seenCategories));
@@ -165,7 +167,7 @@ public class GmailService {
                                               .name(fileName)
                                               .sender(sender)
                                               .senderEmail(senderEmail)
-                                              .receiver(receiver)
+                                              .receiver(receiverSet)
                                               .thread(thread)
                                               .subject(subject)
                                               .cc(ccSet)
@@ -202,28 +204,35 @@ public class GmailService {
         return message.getThreadId();
     }
 
-    private Set<String> extractCCEmails(String cc) {
-        if (cc == null) {
+    private Set<String> extractEmails(String emails) {
+        if (emails == null) {
             return new HashSet<>();
         }
-        Set<String> ccEmails = new HashSet<>();
-        String[] emails = cc.split(",");
-        for (String e : emails) {
-            String email = extractSenderEmail(e);
-            ccEmails.add(email);
+        Set<String> emailSet = new HashSet<>();
+        String[] tmp = emails.split(",");
+        for (String e : tmp) {
+            String email = extractEmail(e);
+            if (!email.isEmpty() && email.contains("@")) {
+                emailSet.add(email);
+            }
+        }
+        if (tmp.length == 0) {
+            String email = extractEmail(emails);
+            emailSet.add(email);
         }
 
-        return ccEmails;
+        return emailSet;
     }
 
-    private String extractSenderEmail(String sender) {
+    private String extractEmail(String email) {
+        String e = email.trim();
         Pattern pattern = Pattern.compile("<(.*?)>");
-        Matcher matcher = pattern.matcher(sender);
+        Matcher matcher = pattern.matcher(e);
         if (matcher.find()) {
             return matcher.group(1);
         }
 
-        return sender;
+        return e;
     }
 
     private String[] extractMessageHeaders(Message message) {
