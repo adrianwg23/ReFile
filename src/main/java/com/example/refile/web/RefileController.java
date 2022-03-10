@@ -67,4 +67,14 @@ public class RefileController {
 
         return ResponseEntity.ok(attachmentService.getAllAttachments());
     }
+
+    @GetMapping(value = "/data/attachments/{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> dataAttachments(@RequestHeader(value = "Authorization") String apiKey, @PathVariable Long userId) {
+        if (apiKey == null || !apiKey.substring(7).equals(this.apiKey)) {
+            return new ResponseEntity<>("{\"error\": \"Unauthorized\"}", HttpStatus.UNAUTHORIZED);
+        }
+        User user = userService.getUser(userId);
+
+        return ResponseEntity.ok(user.getAttachments());
+    }
 }
