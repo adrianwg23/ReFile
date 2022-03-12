@@ -47,7 +47,7 @@ public class Attachment {
     private Set<String> receiver = new HashSet<>();
 
     @JsonIgnore
-    @Column(name = "g_id", length = 1000)
+    @Column(name = "g_id", length = 1000000)
     private String gId;
 
     private String name;
