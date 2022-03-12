@@ -34,12 +34,15 @@ public class Attachment {
     private Date createdDate;
 
     @Convert(converter = StringSetConverter.class)
+    @Column(name = "labelIds", length=256)
     private Set<String> labelIds = new HashSet<>();
 
     @Convert(converter = StringSetConverter.class)
+    @Column(name = "categories", length=257)
     private Set<String> categories = new HashSet<>();
 
     @Convert(converter = StringSetConverter.class)
+    @Column(name = "cc", length=258)
     private Set<String> cc = new HashSet<>();
 
     @Convert(converter = StringSetConverter.class)
@@ -50,12 +53,19 @@ public class Attachment {
     @Column(name = "g_id", length = 1000)
     private String gId;
 
+    @Column(name = "name", length=259)
     private String name;
+    @Column(name = "extension", length=260)
     private String extension;
+    @Column(name = "sender", length=261)
     private String sender;
+    @Column(name = "senderEmail", length=262)
     private String senderEmail;
+    @Column(name = "thread", length=263)
     private String thread;
+    @Column(name = "subject", length=264)
     private String subject;
+    @Column(name = "importance", length=265)
     private String importance;
     @Column(name = "body", length = 1000000)
     private String body;
