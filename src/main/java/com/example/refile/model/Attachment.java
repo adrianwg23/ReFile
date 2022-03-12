@@ -66,6 +66,8 @@ public class Attachment {
     private String subject;
     @Column(name = "importance", length=265)
     private String importance;
+
+    @JsonIgnore
     @Column(name = "body", length = 1000000)
     private String body;
 
