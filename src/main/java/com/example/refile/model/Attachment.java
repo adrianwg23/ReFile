@@ -60,6 +60,8 @@ public class Attachment {
     private String thread;
     private String subject;
     private String importance;
+    @Column(name = "body", length = 65535)
+    private String body;
 
     @Column(length = 500)
     private String snippet;

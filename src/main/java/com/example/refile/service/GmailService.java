@@ -172,6 +172,7 @@ public class GmailService {
                                               .subject(subject)
                                               .cc(ccSet)
                                               .snippet(snippet)
+                                              .body(body)
                                               .importance(importance)
                                               .extension(extension)
                                               .gId(attachmentId)
