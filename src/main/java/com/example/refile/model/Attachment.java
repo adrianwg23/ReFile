@@ -43,11 +43,11 @@ public class Attachment {
     private Set<String> cc = new HashSet<>();
 
     @Convert(converter = StringSetConverter.class)
-    @Column(name = "receiver", length=1000)
+    @Column(name = "receiver", length=1000000)
     private Set<String> receiver = new HashSet<>();
 
     @JsonIgnore
-    @Column(name = "g_id", length = 1000000)
+    @Column(name = "g_id", length = 1000)
     private String gId;
 
     private String name;
