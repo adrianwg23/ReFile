@@ -34,19 +34,19 @@ public class Attachment {
     private Date createdDate;
 
     @Convert(converter = StringSetConverter.class)
-    @Column(name = "labelIds", length=256)
+    @Column(name = "labelIds", length=500)
     private Set<String> labelIds = new HashSet<>();
 
     @Convert(converter = StringSetConverter.class)
-    @Column(name = "categories", length=257)
+    @Column(name = "categories", length=1000)
     private Set<String> categories = new HashSet<>();
 
     @Convert(converter = StringSetConverter.class)
-    @Column(name = "cc", length=258)
+    @Column(name = "cc", length=500000)
     private Set<String> cc = new HashSet<>();
 
     @Convert(converter = StringSetConverter.class)
-    @Column(name = "receiver", length=1000000)
+    @Column(name = "receiver", length=500000)
     private Set<String> receiver = new HashSet<>();
 
     @JsonIgnore
@@ -55,7 +55,6 @@ public class Attachment {
 
     @Column(name = "name", length=259)
     private String name;
-    @Column(name = "extension", length=260)
     private String extension;
     @Column(name = "sender", length=261)
     private String sender;
