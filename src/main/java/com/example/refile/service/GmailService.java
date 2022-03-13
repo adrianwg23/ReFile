@@ -57,7 +57,7 @@ public class GmailService {
      * @return List of Attachments belonging to the user
      */
     public List<Attachment> getAttachments(User user) throws IOException {
-        List<Attachment> attachments = user.getAttachments();
+        List<Attachment> attachments = attachmentService.getTop1000AttachmentsByUser(user);
 
         if (attachments.isEmpty()) {
             return syncAttachments(user);
@@ -89,7 +89,7 @@ public class GmailService {
 
         long endTime = System.currentTimeMillis();
         logger.info("That took " + (endTime - startTime) / 1000.0 + " seconds");
-        return attachmentService.getAttachmentsByUser(user);
+        return attachmentService.getTop1000AttachmentsByUser(user);
     }
 
     private Optional<List<Attachment>> processMessage(Message message, User user, Set<String> seenThreads) {

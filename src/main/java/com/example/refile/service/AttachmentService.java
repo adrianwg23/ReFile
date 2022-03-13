@@ -30,6 +30,10 @@ public class AttachmentService {
         return attachmentRepository.findAllByUserOrderByCreatedDateDesc(user);
     }
 
+    public List<Attachment> getTop1000AttachmentsByUser(User user) {
+        return attachmentRepository.findTop1000ByUserOrderByCreatedDateDesc(user);
+    }
+
     public List<Attachment> getAllAttachments() {
         return attachmentRepository.findAll();
     }
