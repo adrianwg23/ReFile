@@ -8,5 +8,6 @@ import lombok.RequiredArgsConstructor;
 public class ThreadDto {
 
     private final String thread;
+    private final String senderEmail;
 
 }

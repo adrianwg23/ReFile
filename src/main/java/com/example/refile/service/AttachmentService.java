@@ -60,7 +60,7 @@ public class AttachmentService {
         Set<ThreadDto> threads = new HashSet<>();
         List<Attachment> attachments = attachmentRepository.findTop100ByUserOrderByCreatedDateDesc(user);
         for (Attachment attachment : attachments) {
-            threads.add(new ThreadDto(attachment.getThread()));
+            threads.add(new ThreadDto(attachment.getThread(), attachment.getSenderEmail()));
             if (threads.size() == 6) {
                 break;
             }
