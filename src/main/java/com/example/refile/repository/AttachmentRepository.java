@@ -11,4 +11,5 @@ import java.util.List;
 public interface AttachmentRepository extends JpaRepository<Attachment, Long> {
     List<Attachment> findAllByUserOrderByCreatedDateDesc(User user);
     List<Attachment> findTop1000ByUserOrderByCreatedDateDesc(User user);
+    List<Attachment> findTop100ByUserOrderByCreatedDateDesc(User user);
 }

@@ -1,6 +1,8 @@
 package com.example.refile.web;
 
 import com.example.refile.dto.CategoryDTO;
+import com.example.refile.dto.SenderDto;
+import com.example.refile.dto.ThreadDto;
 import com.example.refile.model.Attachment;
 import com.example.refile.model.User;
 import com.example.refile.service.AttachmentService;
@@ -67,5 +69,17 @@ public class RefileController {
         User user = userService.getUser(userId);
 
         return ResponseEntity.ok(attachmentService.getTop1000AttachmentsByUser(user));
+    }
+
+    @GetMapping("/senders/{userId}")
+    public ResponseEntity<List<SenderDto>> senders(@PathVariable Long userId) throws IOException {
+        User user = userService.getUser(userId);
+        return ResponseEntity.ok(attachmentService.getTopSenders(user));
+    }
+
+    @GetMapping("/threads/{userId}")
+    public ResponseEntity<List<ThreadDto>> threads(@PathVariable Long userId) throws IOException {
+        User user = userService.getUser(userId);
+        return ResponseEntity.ok(attachmentService.getTopThreads(user));
     }
 }
