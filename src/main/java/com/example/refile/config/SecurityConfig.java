@@ -38,7 +38,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
             .and()
                 .authorizeRequests()
-                .antMatchers("/login", "/data/*").permitAll()
+                .antMatchers("/login", "/data/**").permitAll()
                 .anyRequest().authenticated()
             .and()
                 .logout() // TODO: endpoint to redirect back to frontend login page
