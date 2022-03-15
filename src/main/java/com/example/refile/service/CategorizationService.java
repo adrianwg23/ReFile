@@ -60,6 +60,7 @@ public class CategorizationService {
                       try {
                           Map<String,Object> map = mapper.readValue(body, Map.class);
                           Map<String, List<Integer>> clusters = (HashMap) map.get("attachmentId_x");
+                          logger.info("clusters: " + clusters);
                           Set<String> categories = new HashSet<>(user.getCategories());
 
                           clusters.forEach((cluster, attachments) -> {
@@ -68,6 +69,7 @@ public class CategorizationService {
                               categories.add(clusterName);
 
                               attachments.forEach(attachmentId -> {
+                                  logger.info("hi: " + attachmentId);
                                   Attachment attachment = attachmentService.getAttachmentById(Long.valueOf(attachmentId));
                                   Set<String> attachmentCategories = new HashSet<>(attachment.getCategories());
                                   attachmentCategories.add(clusterName);
