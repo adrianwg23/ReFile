@@ -86,6 +86,11 @@ public class GmailService {
         }
 
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+        try {
+            Thread.sleep(5000L);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         categorizationService.clusterAttachments(user).join();
 
 
