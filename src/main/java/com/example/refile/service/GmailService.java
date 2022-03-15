@@ -88,11 +88,13 @@ public class GmailService {
 
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
         categorizationService.clusterAttachments(user.getUserId()).join();
+        user.getAttachments().addAll(attachmentService.getAttachmentsByUser(user));
+        userService.saveUser(user);
 
 
         long endTime = System.currentTimeMillis();
         logger.info("That took " + (endTime - startTime) / 1000.0 + " seconds");
-        return attachmentService.getAttachmentsByUser(user);
+        return user.getAttachments();
     }
 
     private Optional<List<Attachment>> processMessage(Message message, User user, Set<String> seenThreads) {
