@@ -3,11 +3,13 @@ package com.example.refile.web;
 import com.example.refile.dto.CategoryDTO;
 import com.example.refile.dto.SenderDto;
 import com.example.refile.dto.ThreadDto;
+import com.example.refile.dto.View;
 import com.example.refile.model.Attachment;
 import com.example.refile.model.User;
 import com.example.refile.service.AttachmentService;
 import com.example.refile.service.GmailService;
 import com.example.refile.service.UserService;
+import com.fasterxml.jackson.annotation.JsonView;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -44,12 +46,14 @@ public class RefileController {
     }
 
     @GetMapping("/attachments/{userId}")
+    @JsonView(View.Public.class)
     public ResponseEntity<List<Attachment>> attachments(@PathVariable Long userId) throws IOException {
         User user = userService.getUser(userId);
         return ResponseEntity.ok(gmailService.getAttachments(user));
     }
 
     @GetMapping("/sync-attachments/{userId}")
+    @JsonView(View.Public.class)
     public ResponseEntity<List<Attachment>> syncAttachments(@PathVariable Long userId) throws IOException {
         User user = userService.getUser(userId);
         return ResponseEntity.ok(gmailService.syncAttachments(user));
@@ -62,6 +66,7 @@ public class RefileController {
     }
 
     @GetMapping(value = "/data/attachments/{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @JsonView(View.Data.class)
     public ResponseEntity<?> dataAttachments(@RequestHeader(value = "Authorization") String apiKey, @PathVariable Long userId) {
         if (apiKey == null || !apiKey.substring(7).equals(this.apiKey)) {
             return new ResponseEntity<>("{\"error\": \"Unauthorized\"}", HttpStatus.UNAUTHORIZED);

@@ -57,7 +57,7 @@ public class GmailService {
      * @return List of Attachments belonging to the user
      */
     public List<Attachment> getAttachments(User user) throws IOException {
-        List<Attachment> attachments = attachmentService.getTop1000AttachmentsByUser(user);
+        List<Attachment> attachments = attachmentService.getAttachmentsByUser(user);
 
         if (attachments.isEmpty()) {
             return syncAttachments(user);
@@ -89,7 +89,7 @@ public class GmailService {
 
         long endTime = System.currentTimeMillis();
         logger.info("That took " + (endTime - startTime) / 1000.0 + " seconds");
-        return attachmentService.getTop1000AttachmentsByUser(user);
+        return attachmentService.getAttachmentsByUser(user);
     }
 
     private Optional<List<Attachment>> processMessage(Message message, User user, Set<String> seenThreads) {
@@ -99,7 +99,6 @@ public class GmailService {
         } else {
             seenThreads.add(threadId);
         }
-        String snippet = extractSnippet(message);
 
         List<Attachment> attachments = new ArrayList<>();
         Set<String> seenCategories = new HashSet<>();
@@ -174,7 +173,6 @@ public class GmailService {
                                               .thread(thread)
                                               .subject(subject)
                                               .cc(ccSet)
-                                              .snippet(snippet)
                                               .body(body)
                                               .importance(importance)
                                               .extension(extension)
@@ -198,10 +196,6 @@ public class GmailService {
         }
 
         return Optional.of(attachments);
-    }
-
-    private String extractSnippet(Message message) {
-        return message.getSnippet();
     }
 
     private String extractThreadId(Message message) {
