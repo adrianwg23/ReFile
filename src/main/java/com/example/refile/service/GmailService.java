@@ -69,7 +69,7 @@ public class GmailService {
     public List<Attachment> syncAttachments(User user) throws IOException {
         long startTime = System.currentTimeMillis();
         attachmentService.deleteAllAttachments(user.getAttachments());
-        user.getAttachments().clear();
+        user.setAttachments(new ArrayList<>());
 
         Gmail gmail = getGmailClient(user.getUserId());
 
