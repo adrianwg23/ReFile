@@ -224,6 +224,9 @@ public class GmailService {
     }
 
     private String extractEmail(String email) {
+        if (email == null) {
+            return "";
+        }
         String e = email.trim();
         Pattern pattern = Pattern.compile("<(.*?)>");
         Matcher matcher = pattern.matcher(e);
