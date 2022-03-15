@@ -182,10 +182,8 @@ public class GmailService {
                                               .build();
 
             List<String> fileNameCategoryExtraction = new ArrayList<>();
-            if (!fileName.isEmpty()) {
-                fileNameCategoryExtraction.addAll(categorizationService.extractCategories(fileName, user.getCategories(),
-                        seenCategories));
-            }
+            fileNameCategoryExtraction.addAll(categorizationService.extractCategories(fileName, user.getCategories(),
+                    seenCategories));
             attachment.getCategories().addAll(threadCategoryExtraction);
             attachment.getCategories().addAll(bodyCategoryExtraction);
             attachment.getCategories().addAll(fileNameCategoryExtraction);
