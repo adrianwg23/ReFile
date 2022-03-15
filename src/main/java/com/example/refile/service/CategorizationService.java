@@ -69,7 +69,9 @@ public class CategorizationService {
 
                               attachments.forEach(attachmentId -> {
                                   Attachment attachment = attachmentService.getAttachmentById(Long.valueOf(attachmentId));
-                                  attachment.getCategories().add(clusterName);
+                                  Set<String> attachmentCategories = new HashSet<>(attachment.getCategories());
+                                  attachmentCategories.add(clusterName);
+                                  attachment.setCategories(attachmentCategories);
                                   attachmentService.saveAttachment(attachment);
                               });
 
