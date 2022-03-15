@@ -23,6 +23,10 @@ public class AttachmentService {
         return attachmentRepository.saveAll(attachments);
     }
 
+    public Attachment saveAttachment(Attachment attachment) {
+        return attachmentRepository.save(attachment);
+    }
+
     public void deleteAllAttachments(List<Attachment> attachments) {
         attachmentRepository.deleteAllInBatch(attachments);
     }
