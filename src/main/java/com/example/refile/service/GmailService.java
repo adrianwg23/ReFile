@@ -83,13 +83,12 @@ public class GmailService {
         for (Message message : messageIds) {
             futures.add(CompletableFuture.supplyAsync(() -> getFullMessage(message, gmail), ioExecutor)
                                          .thenApplyAsync(fullMessage -> processMessage(fullMessage, user, seenThreads), cpuExecutor)
-                                         .thenAccept(a -> a.ifPresent(attachmentService::saveAllAttachments)));
+                                         .thenAccept(a -> a.ifPresent(attachments -> user.getAttachments().addAll(attachments))));
         }
 
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
-        categorizationService.clusterAttachments(user.getUserId()).join();
-        user.getAttachments().addAll(attachmentService.getAttachmentsByUser(user));
         userService.saveUser(user);
+        categorizationService.clusterAttachments(user.getUserId()).join();
 
 
         long endTime = System.currentTimeMillis();
