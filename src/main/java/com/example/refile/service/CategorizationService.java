@@ -77,8 +77,10 @@ public class CategorizationService {
                                   attachmentService.saveAttachment(attachment);
                               });
 
-                              user.setCategories(categories);
-                              userService.saveUser(user);
+                              logger.info("yeet");
+
+                              logger.info("pushin p: " + user.getAttachments());
+                              userService.setCategories(user, categories);
                               logger.info("finished persisting");
                           });
                       } catch (JsonProcessingException e) {
