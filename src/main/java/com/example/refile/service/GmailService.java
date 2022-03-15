@@ -42,6 +42,7 @@ public class GmailService {
     private final CategorizationService categorizationService;
     private final CredentialService credentialService;
     private final AttachmentService attachmentService;
+    private final UserService userService;
 
     @Qualifier("ioExecutor")
     private final ExecutorService ioExecutor;
@@ -82,10 +83,16 @@ public class GmailService {
         for (Message message : messageIds) {
             futures.add(CompletableFuture.supplyAsync(() -> getFullMessage(message, gmail), ioExecutor)
                                          .thenApplyAsync(fullMessage -> processMessage(fullMessage, user, seenThreads), cpuExecutor)
-                                         .thenAccept(a -> a.ifPresent(attachmentService::saveAllAttachments)));
+                                         .thenAccept(a -> {
+                                             if (a.isPresent()) {
+                                                 attachmentService.saveAllAttachments(a.get());
+                                                 user.getAttachments().addAll(a.get());
+                                             }
+                                         }));
         }
 
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+        userService.saveUser(user);
         categorizationService.clusterAttachments(user).join();
 
 
