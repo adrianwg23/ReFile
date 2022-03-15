@@ -8,6 +8,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -30,6 +32,7 @@ public class Attachment {
 
     @ManyToOne
     @JoinColumn(name = "user_id")
+    @NotFound(action = NotFoundAction.IGNORE)
     @JsonView(View.Public.class)
     private User user;
 
