@@ -3,8 +3,6 @@ package com.example.refile.service;
 import com.example.refile.model.Attachment;
 import com.example.refile.model.User;
 import com.example.refile.util.HttpUtil;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.services.gmail.Gmail;
@@ -89,38 +87,7 @@ public class GmailService {
 
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
         userService.saveUser(user);
-        String body = categorizationService.getClusters(user).join();
-
-        ObjectMapper mapper = new ObjectMapper();
-        try {
-            Map<String,Object> map = mapper.readValue(body, Map.class);
-            Map<String, List<Integer>> clusters = (HashMap) map.get("attachmentId_x");
-            logger.info("clusters: " + clusters);
-            Set<String> categories = new HashSet<>(user.getCategories());
-
-            clusters.forEach((cluster, attachmentIds) -> {
-                int clusterNumber = Integer.parseInt(cluster) + 1;
-                String clusterName = "✨ Group " + clusterNumber;
-                categories.add(clusterName);
-
-                attachmentIds.forEach(attachmentId -> {
-                    Attachment attachment = attachmentService.getAttachmentById(Long.valueOf(attachmentId));
-                    attachment.setSubject("yeet");
-                    Set<String> attachmentCategories = new HashSet<>(attachment.getCategories());
-                    logger.info("before: " + attachment.getCategories());
-                    attachmentCategories.add(clusterName);
-                    attachment.setCategories(attachmentCategories);
-                    logger.info("after: " + attachment.getCategories());
-                });
-
-                user.setCategories(categories);
-                logger.info("finished persisting");
-            });
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
-
-        userService.saveUser(user);
+        categorizationService.clusterAttachments(user).join();
 
         long endTime = System.currentTimeMillis();
         logger.info("That took " + (endTime - startTime) / 1000.0 + " seconds");
