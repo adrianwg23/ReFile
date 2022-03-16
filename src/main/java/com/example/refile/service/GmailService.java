@@ -104,6 +104,7 @@ public class GmailService {
 
                 attachmentIds.forEach(attachmentId -> {
                     Attachment attachment = attachmentService.getAttachmentById(Long.valueOf(attachmentId));
+                    attachment.setSubject("yeet");
                     Set<String> attachmentCategories = new HashSet<>(attachment.getCategories());
                     logger.info("before: " + attachment.getCategories());
                     attachmentCategories.add(clusterName);
