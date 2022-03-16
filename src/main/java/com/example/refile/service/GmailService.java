@@ -16,6 +16,7 @@ import org.apache.commons.codec.binary.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -50,6 +51,13 @@ public class GmailService {
     @Qualifier("cpuExecutor")
     private final ExecutorService cpuExecutor;
 
+    // shared boolean accessed by multiple threads to prevent concurrent syncs
+    // only one thread can write to this so thread safe
+    private boolean syncInProgress;
+
+    @Value("${spring.profiles.active}")
+    String activeProfile;
+
     /**
      * Retrieves attachments for a given user from the database. If attachments are empty, a sync will be be made to
      * fetch attachments from Gmail.
@@ -67,7 +75,20 @@ public class GmailService {
     }
 
     public List<Attachment> syncAttachments(User user) throws IOException {
+        while (syncInProgress) {
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            if (!syncInProgress) {
+                break;
+            }
+        }
+
         long startTime = System.currentTimeMillis();
+        syncInProgress = true;
         user.getAttachments().clear();
 
         Gmail gmail = getGmailClient(user.getUserId());
@@ -87,10 +108,14 @@ public class GmailService {
 
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
         userService.saveUser(user);
-        categorizationService.clusterAttachments(user);
+        if ("prod".equals(activeProfile)) {
+            categorizationService.clusterAttachments(user);
+        }
 
+        syncInProgress = false;
         long endTime = System.currentTimeMillis();
         logger.info("That took " + (endTime - startTime) / 1000.0 + " seconds");
+
         return user.getAttachments();
     }
 
