@@ -87,7 +87,8 @@ public class GmailService {
 
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
         userService.saveUser(user);
-        categorizationService.clusterAttachments(user).join();
+//        categorizationService.clusterAttachments(user).join();
+
 
 
         long endTime = System.currentTimeMillis();

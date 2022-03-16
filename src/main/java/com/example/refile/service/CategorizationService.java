@@ -63,19 +63,26 @@ public class CategorizationService {
                           logger.info("clusters: " + clusters);
                           Set<String> categories = new HashSet<>(user.getCategories());
 
-                          clusters.forEach((cluster, attachments) -> {
+                          clusters.forEach((cluster, attachmentIds) -> {
                               int clusterNumber = Integer.parseInt(cluster) + 1;
                               String clusterName = "✨ Group " + clusterNumber;
                               categories.add(clusterName);
 
-                              attachments.forEach(attachmentId -> {
+                              attachmentIds.forEach(attachmentId -> {
                                   Attachment attachment = attachmentService.getAttachmentById(Long.valueOf(attachmentId));
                                   Set<String> attachmentCategories = new HashSet<>(attachment.getCategories());
+                                  logger.info("before: " + attachment.getCategories());
                                   attachmentCategories.add(clusterName);
                                   attachment.setCategories(attachmentCategories);
+                                  logger.info("after: " + attachment.getCategories());
                               });
 
                               userService.setCategories(user, categories);
+
+                              attachmentIds.forEach(attachmentId -> {
+                                  Attachment attachment = attachmentService.getAttachmentById(Long.valueOf(attachmentId));
+                                  logger.info("after saving: " + attachment.getCategories());
+                              });
                               logger.info("finished persisting");
                           });
                       } catch (JsonProcessingException e) {
