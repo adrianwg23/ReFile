@@ -88,6 +88,7 @@ public class GmailService {
         }
 
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+        userService.saveUser(user);
         String body = categorizationService.getClusters(user).join();
 
         ObjectMapper mapper = new ObjectMapper();
