@@ -68,8 +68,7 @@ public class GmailService {
 
     public List<Attachment> syncAttachments(User user) throws IOException {
         long startTime = System.currentTimeMillis();
-        attachmentService.deleteAllAttachments(user.getAttachments());
-        user.setAttachments(new ArrayList<>());
+        user.getAttachments().clear();
 
         Gmail gmail = getGmailClient(user.getUserId());
 
@@ -88,7 +87,7 @@ public class GmailService {
 
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
         userService.saveUser(user);
-        categorizationService.clusterAttachments(user.getUserId()).join();
+        categorizationService.clusterAttachments(user).join();
 
 
         long endTime = System.currentTimeMillis();

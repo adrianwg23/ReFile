@@ -44,12 +44,11 @@ public class CategorizationService {
         return containedCategories;
     }
 
-    public CompletableFuture<Void> clusterAttachments(Long userId) {
-        User user = userService.getUser(userId);
+    public CompletableFuture<Void> clusterAttachments(User user) {
         HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder(URI.create(URL))
                                          .header("Content-Type", "application/json")
-                                         .POST(HttpRequest.BodyPublishers.ofString(String.format("{\"user_id\": %d}", userId)))
+                                         .POST(HttpRequest.BodyPublishers.ofString(String.format("{\"user_id\": %d}", user.getUserId())))
                                          .build();
 
         return client.sendAsync(request, HttpResponse.BodyHandlers.ofString())
