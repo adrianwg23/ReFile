@@ -52,17 +52,17 @@ public class CategorizationService {
                                          .build();
 
         CompletableFuture<String> response = client.sendAsync(request, HttpResponse.BodyHandlers.ofString())
-                                               .thenApply(res -> {
-                                                   if (res.statusCode() == 200) {
-                                                       logger.info("success");
-                                                       return res.body();
-                                                   } else {
-                                                       logger.info("fail");
-                                                       logger.info(res.body());
-                                                       return "";
-                                                   }
-                                               });
-        
+                                                   .thenApply(res -> {
+                                                       if (res.statusCode() == 200) {
+                                                           logger.info("success");
+                                                           return res.body();
+                                                       } else {
+                                                           logger.info("fail");
+                                                           logger.info(res.body());
+                                                           return "";
+                                                       }
+                                                   });
+
         String body = response.join();
         if (body.isEmpty()) {
             return;
@@ -70,7 +70,7 @@ public class CategorizationService {
 
         ObjectMapper mapper = new ObjectMapper();
         try {
-            Map<String,Object> map = mapper.readValue(body, Map.class);
+            Map<String, Object> map = mapper.readValue(body, Map.class);
             Map<String, List<Integer>> clusters = (HashMap) map.get("attachmentId_x");
             Set<String> categories = new HashSet<>(user.getCategories());
 
