@@ -75,6 +75,7 @@ public class CategorizationService {
                                   attachmentCategories.add(clusterName);
                                   attachment.setCategories(attachmentCategories);
                                   logger.info("after: " + attachment.getCategories());
+                                  attachment.setUser(user);
                                   userService.saveUser(user);
                               });
 
