@@ -26,6 +26,7 @@ import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -52,8 +53,7 @@ public class GmailService {
     private final ExecutorService cpuExecutor;
 
     // shared boolean accessed by multiple threads to prevent concurrent syncs
-    // only one thread can write to this so thread safe
-    private boolean syncInProgress;
+    private AtomicBoolean syncInProgress = new AtomicBoolean(false);
 
     @Value("${spring.profiles.active}")
     String activeProfile;
@@ -75,20 +75,21 @@ public class GmailService {
     }
 
     public List<Attachment> syncAttachments(User user) throws IOException {
-        while (syncInProgress) {
-            try {
-                Thread.sleep(2000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-
-            if (!syncInProgress) {
+        while (true) {
+            if (syncInProgress.compareAndSet(false, true)) {
+                logger.info("no sync in progress. exiting loop");
                 break;
+            } else {
+                logger.info("waiting for other thread to finish. looping");
+                try {
+                    Thread.sleep(2000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
         }
 
         long startTime = System.currentTimeMillis();
-        syncInProgress = true;
         user.getAttachments().clear();
 
         Gmail gmail = getGmailClient(user.getUserId());
@@ -112,7 +113,7 @@ public class GmailService {
             categorizationService.clusterAttachments(user);
         }
 
-        syncInProgress = false;
+        syncInProgress.set(false);
         long endTime = System.currentTimeMillis();
         logger.info("That took " + (endTime - startTime) / 1000.0 + " seconds");
 
