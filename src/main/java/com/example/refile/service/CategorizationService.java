@@ -69,17 +69,12 @@ public class CategorizationService {
                               categories.add(clusterName);
 
                               attachments.forEach(attachmentId -> {
-                                  logger.info("hi: " + attachmentId);
                                   Attachment attachment = attachmentService.getAttachmentById(Long.valueOf(attachmentId));
                                   Set<String> attachmentCategories = new HashSet<>(attachment.getCategories());
                                   attachmentCategories.add(clusterName);
                                   attachment.setCategories(attachmentCategories);
-                                  attachmentService.saveAttachment(attachment);
                               });
 
-                              logger.info("yeet");
-
-                              logger.info("pushin p: " + user.getAttachments());
                               userService.setCategories(user, categories);
                               logger.info("finished persisting");
                           });
