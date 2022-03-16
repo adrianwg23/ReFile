@@ -44,49 +44,56 @@ public class CategorizationService {
         return containedCategories;
     }
 
-    public CompletableFuture<Void> clusterAttachments(User user) {
+    public void clusterAttachments(User user) {
         HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder(URI.create(URL))
                                          .header("Content-Type", "application/json")
                                          .POST(HttpRequest.BodyPublishers.ofString(String.format("{\"user_id\": %d}", user.getUserId())))
                                          .build();
 
-        return client.sendAsync(request, HttpResponse.BodyHandlers.ofString())
-              .thenAccept(response -> {
-                  if (response.statusCode() == 200) {
-                      logger.info("success");
-                      String body = response.body();
-                      ObjectMapper mapper = new ObjectMapper();
-                      try {
-                          Map<String,Object> map = mapper.readValue(body, Map.class);
-                          Map<String, List<Integer>> clusters = (HashMap) map.get("attachmentId_x");
-                          Set<String> categories = new HashSet<>(user.getCategories());
+        CompletableFuture<String> response = client.sendAsync(request, HttpResponse.BodyHandlers.ofString())
+                                               .thenApply(res -> {
+                                                   if (res.statusCode() == 200) {
+                                                       logger.info("success");
+                                                       return res.body();
+                                                   } else {
+                                                       logger.info("fail");
+                                                       logger.info(res.body());
+                                                       return "";
+                                                   }
+                                               });
+        
+        String body = response.join();
+        if (body.isEmpty()) {
+            return;
+        }
 
-                          clusters.forEach((cluster, attachmentIds) -> {
-                              int clusterNumber = Integer.parseInt(cluster) + 1;
-                              String clusterName = "✨ Group " + clusterNumber;
-                              categories.add(clusterName);
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            Map<String,Object> map = mapper.readValue(body, Map.class);
+            Map<String, List<Integer>> clusters = (HashMap) map.get("attachmentId_x");
+            Set<String> categories = new HashSet<>(user.getCategories());
 
-                              attachmentIds.forEach(attachmentId -> {
-                                  Attachment attachment = attachmentService.getAttachmentById(Long.valueOf(attachmentId));
-                                  Set<String> attachmentCategories = new HashSet<>(attachment.getCategories());
-                                  logger.info("before: " + attachment.getCategories());
-                                  attachmentCategories.add(clusterName);
-                                  attachment.setCategories(attachmentCategories);
-                                  logger.info("after: " + attachment.getCategories());
-                              });
-                          });
+            clusters.forEach((cluster, attachmentIds) -> {
+                int clusterNumber = Integer.parseInt(cluster) + 1;
+                String clusterName = "✨ Group " + clusterNumber;
+                categories.add(clusterName);
 
-                          user.setCategories(categories);
-                          userService.saveUser(user);
-                          logger.info("finished persisting");
-                      } catch (JsonProcessingException e) {
-                          e.printStackTrace();
-                      }
-                  } else {
-                      logger.info("fail");
-                      logger.info(response.body());
-                  }
-              });
+                attachmentIds.forEach(attachmentId -> {
+                    Attachment attachment = attachmentService.getAttachmentById(Long.valueOf(attachmentId));
+                    Set<String> attachmentCategories = new HashSet<>(attachment.getCategories());
+                    logger.info("before: " + attachment.getCategories());
+                    attachmentCategories.add(clusterName);
+                    attachment.setCategories(attachmentCategories);
+                    logger.info("after: " + attachment.getCategories());
+                });
+            });
+
+            user.setCategories(categories);
+            userService.saveUser(user);
+            logger.info("finished persisting");
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
     }
 }
