@@ -75,16 +75,10 @@ public class CategorizationService {
                                   attachmentCategories.add(clusterName);
                                   attachment.setCategories(attachmentCategories);
                                   logger.info("after: " + attachment.getCategories());
-                                  attachment.setUser(user);
                                   userService.saveUser(user);
                               });
 
                               userService.setCategories(user, categories);
-
-                              attachmentIds.forEach(attachmentId -> {
-                                  Attachment attachment = attachmentService.getAttachmentById(Long.valueOf(attachmentId));
-                                  logger.info("after saving: " + attachment.getCategories());
-                              });
                               logger.info("finished persisting");
                           });
                       } catch (JsonProcessingException e) {
