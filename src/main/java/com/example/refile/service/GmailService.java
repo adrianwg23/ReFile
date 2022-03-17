@@ -122,7 +122,7 @@ public class GmailService {
             syncInProgress.set(false);
         }
 
-        return user.getAttachments();
+        return attachmentService.getAttachmentsByUser(user);
     }
 
     private Optional<List<Attachment>> processMessage(Message message, User user, Set<String> seenThreads) {
