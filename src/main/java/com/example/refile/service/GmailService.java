@@ -66,7 +66,7 @@ public class GmailService {
      * @return List of Attachments belonging to the user
      */
     public List<Attachment> getAttachments(User user) throws IOException {
-        List<Attachment> attachments = attachmentService.getAttachmentsByUser(user);
+        List<Attachment> attachments = user.getAttachments();
 
         if (attachments.isEmpty()) {
             return syncAttachments(user);
@@ -89,33 +89,38 @@ public class GmailService {
             }
         }
 
-        long startTime = System.currentTimeMillis();
-        user.getAttachments().clear();
+        try {
+            long startTime = System.currentTimeMillis();
+            user.getAttachments().clear();
 
-        Gmail gmail = getGmailClient(user.getUserId());
+            Gmail gmail = getGmailClient(user.getUserId());
 
-        logger.info("getting message ids with attachments");
-        List<Message> messageIds = getMessageIdsWithAttachments(gmail);
-        Collections.reverse(messageIds);
-        Set<String> seenThreads = Sets.newConcurrentHashSet();
-        List<CompletableFuture<Void>> futures = new ArrayList<>();
+            logger.info("getting message ids with attachments");
+            List<Message> messageIds = getMessageIdsWithAttachments(gmail);
+            Collections.reverse(messageIds);
+            Set<String> seenThreads = Sets.newConcurrentHashSet();
+            List<CompletableFuture<Void>> futures = new ArrayList<>();
 
-        logger.info("processing messages");
-        for (Message message : messageIds) {
-            futures.add(CompletableFuture.supplyAsync(() -> getFullMessage(message, gmail), ioExecutor)
-                                         .thenApplyAsync(fullMessage -> processMessage(fullMessage, user, seenThreads), cpuExecutor)
-                                         .thenAccept(a -> a.ifPresent(attachments -> user.getAttachments().addAll(attachments))));
+            logger.info("processing messages");
+            for (Message message : messageIds) {
+                futures.add(CompletableFuture.supplyAsync(() -> getFullMessage(message, gmail), ioExecutor)
+                                             .thenApplyAsync(fullMessage -> processMessage(fullMessage, user, seenThreads), cpuExecutor)
+                                             .thenAccept(a -> a.ifPresent(attachments -> user.getAttachments().addAll(attachments))));
+            }
+
+            CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+            userService.saveUser(user);
+            if ("prod".equals(activeProfile)) {
+                categorizationService.clusterAttachments(user);
+            }
+
+            long endTime = System.currentTimeMillis();
+            logger.info("That took " + (endTime - startTime) / 1000.0 + " seconds");
+        } catch (Exception e) {
+            logger.error(e.getLocalizedMessage());
+        } finally {
+            syncInProgress.set(false);
         }
-
-        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
-        userService.saveUser(user);
-        if ("prod".equals(activeProfile)) {
-            categorizationService.clusterAttachments(user);
-        }
-
-        syncInProgress.set(false);
-        long endTime = System.currentTimeMillis();
-        logger.info("That took " + (endTime - startTime) / 1000.0 + " seconds");
 
         return user.getAttachments();
     }
