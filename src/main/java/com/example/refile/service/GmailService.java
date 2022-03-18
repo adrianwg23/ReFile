@@ -101,7 +101,7 @@ public class GmailService {
 
             long endTime = System.currentTimeMillis();
             logger.info("That took " + (endTime - startTime) / 1000.0 + " seconds");
-        } catch (Exception e) {
+        } catch (IOException e) {
             logger.error(e.getLocalizedMessage());
         }
 
