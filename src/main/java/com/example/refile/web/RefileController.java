@@ -17,10 +17,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 @RestController
 @RequiredArgsConstructor
@@ -48,14 +46,14 @@ public class RefileController {
 
     @GetMapping("/attachments/{userId}")
     @JsonView(View.Public.class)
-    public ResponseEntity<List<Attachment>> attachments(@PathVariable Long userId) throws IOException {
+    public ResponseEntity<List<Attachment>> attachments(@PathVariable Long userId) {
         User user = userService.getUser(userId);
         return ResponseEntity.ok(gmailService.getAttachments(user));
     }
 
     @GetMapping("/sync-attachments/{userId}")
     @JsonView(View.Public.class)
-    public ResponseEntity<List<Attachment>> syncAttachments(@PathVariable Long userId) throws IOException {
+    public ResponseEntity<List<Attachment>> syncAttachments(@PathVariable Long userId) {
         User user = userService.getUser(userId);
         return ResponseEntity.ok(gmailService.syncAttachments(user));
     }
@@ -78,13 +76,13 @@ public class RefileController {
     }
 
     @GetMapping("/senders/{userId}")
-    public ResponseEntity<List<SenderDto>> senders(@PathVariable Long userId) throws IOException {
+    public ResponseEntity<List<SenderDto>> senders(@PathVariable Long userId) {
         User user = userService.getUser(userId);
         return ResponseEntity.ok(attachmentService.getTopSenders(user));
     }
 
     @GetMapping("/threads/{userId}")
-    public ResponseEntity<List<ThreadDto>> threads(@PathVariable Long userId) throws IOException {
+    public ResponseEntity<List<ThreadDto>> threads(@PathVariable Long userId) {
         User user = userService.getUser(userId);
         return ResponseEntity.ok(attachmentService.getTopThreads(user));
     }

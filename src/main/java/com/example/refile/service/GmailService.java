@@ -26,7 +26,6 @@ import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -53,7 +52,7 @@ public class GmailService {
     private final ExecutorService cpuExecutor;
 
     // shared boolean accessed by multiple threads to prevent concurrent syncs
-    private AtomicBoolean syncInProgress = new AtomicBoolean(false);
+//    private AtomicBoolean syncInProgress = new AtomicBoolean(false);
 
     @Value("${spring.profiles.active}")
     String activeProfile;
@@ -65,7 +64,7 @@ public class GmailService {
      * @param user User
      * @return List of Attachments belonging to the user
      */
-    public List<Attachment> getAttachments(User user) throws IOException {
+    public List<Attachment> getAttachments(User user) {
         List<Attachment> attachments = user.getAttachments();
 
         if (attachments.isEmpty()) {
@@ -74,21 +73,7 @@ public class GmailService {
         return attachments;
     }
 
-    public List<Attachment> syncAttachments(User user) throws IOException {
-        while (true) {
-            if (syncInProgress.compareAndSet(false, true)) {
-                logger.info("no sync in progress. exiting loop");
-                break;
-            } else {
-                logger.info("waiting for other thread to finish. looping");
-                try {
-                    Thread.sleep(2000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-
+    public List<Attachment> syncAttachments(User user) {
         try {
             long startTime = System.currentTimeMillis();
             user.getAttachments().clear();
@@ -118,8 +103,6 @@ public class GmailService {
             logger.info("That took " + (endTime - startTime) / 1000.0 + " seconds");
         } catch (Exception e) {
             logger.error(e.getLocalizedMessage());
-        } finally {
-            syncInProgress.set(false);
         }
 
         return attachmentService.getAttachmentsByUser(user);
