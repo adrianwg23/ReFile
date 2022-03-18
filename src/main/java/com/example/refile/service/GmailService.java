@@ -178,6 +178,10 @@ public class GmailService {
             }
 
             String attachmentId = attachmentPart.getBody().getAttachmentId();
+            Set<String> labelIds = new HashSet<>();
+            if (message.getLabelIds() != null) {
+                labelIds.addAll(message.getLabelIds());
+            }
 
             Attachment attachment = Attachment.builder()
                                               .user(user)
@@ -193,7 +197,7 @@ public class GmailService {
                                               .importance(importance)
                                               .extension(extension)
                                               .gId(attachmentId)
-                                              .labelIds(new HashSet<>(message.getLabelIds()))
+                                              .labelIds(labelIds)
                                               .categories(new HashSet<>())
                                               .build();
 
